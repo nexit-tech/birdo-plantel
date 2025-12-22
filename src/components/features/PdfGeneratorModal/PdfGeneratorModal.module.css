@@ -41,19 +41,42 @@
 .ring { font-size: 13px; color: #8E8E93; }
 
 .previewContainer {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 16px; text-align: center;
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 20px; text-align: center; padding-top: 20px;
 }
-.previewHeader { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 20px; }
-.previewIcon { color: var(--primary); }
+.previewHeader { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.fileIconBig {
+  width: 120px; height: 80px; border-radius: 8px; border: 1px solid #CCC;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
 .previewTitle { font-size: 22px; font-weight: 700; }
-.previewSub { font-size: 14px; color: #6D6D72; max-width: 80%; }
+.previewSub { font-size: 14px; color: #6D6D72; }
+
+.optionsSection {
+  width: 100%; text-align: left; background-color: #F9F9F9;
+  padding: 16px; border-radius: 16px;
+}
+.optionLabel { font-size: 13px; font-weight: 600; color: #6D6D72; margin-bottom: 8px; display: block; }
+
+.colorPickerWrapper {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.colorInput {
+  width: 50px; height: 50px; border: none; border-radius: 50%; cursor: pointer;
+  background: none;
+}
+.colorInput::-webkit-color-swatch-wrapper { padding: 0; }
+.colorInput::-webkit-color-swatch { border: 1px solid #E5E5EA; border-radius: 12px; }
+
+.colorValue { font-family: monospace; font-size: 14px; color: #666; }
 
 .downloadBtn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   background-color: var(--primary); color: #FFFFFF; width: 100%; height: 56px;
   border-radius: 16px; font-weight: 600; font-size: 16px;
-  box-shadow: 0 4px 12px rgba(37, 145, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(37, 145, 255, 0.3); margin-top: auto;
 }
 
 .backBtn {

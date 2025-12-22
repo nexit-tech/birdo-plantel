@@ -5,6 +5,7 @@ import { X, Search, FileText, Download } from 'lucide-react';
 import { MOCK_BIRDS, MOCK_BREEDER } from '@/data/mock';
 import { Bird } from '@/types';
 import { generatePedigreePDF } from '@/utils/pdfGenerator';
+import { ColorPicker } from '@/components/ui/ColorPicker/ColorPicker'; // Novo Import
 import styles from './PdfGeneratorModal.module.css';
 
 interface PdfGeneratorModalProps {
@@ -15,6 +16,7 @@ interface PdfGeneratorModalProps {
 export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBird, setSelectedBird] = useState<Bird | null>(null);
+  const [bgColor, setBgColor] = useState('#FFFFFF');
 
   if (!isOpen) return null;
 
@@ -25,7 +27,7 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
 
   const handleDownload = () => {
     if (selectedBird) {
-      generatePedigreePDF(selectedBird, MOCK_BREEDER);
+      generatePedigreePDF(selectedBird, MOCK_BREEDER, bgColor);
     }
   };
 
@@ -69,16 +71,30 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
         ) : (
           <div className={styles.previewContainer}>
             <div className={styles.previewHeader}>
-              <FileText size={48} className={styles.previewIcon} />
-              <h4 className={styles.previewTitle}>Pronto para Gerar</h4>
+              <div 
+                className={styles.fileIconBig}
+                style={{ backgroundColor: bgColor }}
+              >
+                <FileText size={40} color="#1C1C1E" />
+              </div>
+              <h4 className={styles.previewTitle}>{selectedBird.name}</h4>
               <p className={styles.previewSub}>
-                Documento de identificação para <strong>{selectedBird.name}</strong>
+                Anilha: {selectedBird.ringNumber}
               </p>
+            </div>
+
+            {/* Novo Componente ColorPicker */}
+            <div className={styles.optionsSection}>
+              <ColorPicker 
+                label="Cor do Fundo da Ficha"
+                value={bgColor}
+                onChange={setBgColor}
+              />
             </div>
 
             <button onClick={handleDownload} className={styles.downloadBtn}>
               <Download size={20} />
-              Baixar PDF Oficial
+              Baixar Ficha PDF
             </button>
 
             <button 
