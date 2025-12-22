@@ -1,66 +1,99 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
 
-export default function Home() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Bird as BirdIcon, Users, Egg, DollarSign } from 'lucide-react';
+import { Header } from '@/components/layout/Header/Header';
+import { Card } from '@/components/ui/Card/Card';
+import { PdfGeneratorModal } from '@/components/features/PdfGeneratorModal/PdfGeneratorModal';
+import { MOCK_STATS } from '@/data/mock';
+import styles from './page.module.css';
+
+export default function Dashboard() {
+  const router = useRouter();
+  const [stats] = useState(MOCK_STATS);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+
+  const dashboardStats = [
+    { 
+      label: 'Total de Aves', 
+      value: stats.totalBirds, 
+      icon: BirdIcon,
+      color: '#2563eb' 
+    },
+    { 
+      label: 'Casais Formados', 
+      value: stats.totalPairs, 
+      icon: Users,
+      color: '#db2777' 
+    },
+    { 
+      label: 'Filhotes Ativos', 
+      value: stats.activeChicks, 
+      icon: Egg,
+      color: '#d97706' 
+    },
+    { 
+      label: 'Disponíveis', 
+      value: stats.availableForSale, 
+      icon: DollarSign,
+      color: '#16a34a' 
+    },
+  ];
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className={styles.container}>
+      <Header useLogo />
+      
+      <div className={styles.grid}>
+        {dashboardStats.map((stat) => (
+          <Card key={stat.label} className={styles.statCard}>
+            <div className={styles.iconWrapper} style={{ backgroundColor: `${stat.color}20` }}>
+              <stat.icon size={24} color={stat.color} />
+            </div>
+            <div className={styles.statInfo}>
+              <span className={styles.statValue}>{stat.value}</span>
+              <span className={styles.statLabel}>{stat.label}</span>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <div className={styles.section}>
+        <h2 className={styles.sectionTitle}>Ações Rápidas</h2>
+        <div className={styles.actionsGrid}>
+          {/* Aves */}
+          <button className={styles.actionCard} onClick={() => router.push('/birds?action=new')}>
+            <span>Nova Ave</span>
+          </button>
+          
+          {/* Casais */}
+          <button className={styles.actionCard} onClick={() => router.push('/pairs?action=new')}>
+            <span>Novo Casal</span>
+          </button>
+          <button className={styles.actionCard} onClick={() => router.push('/pairs')}>
+            <span>Registrar Postura</span>
+          </button>
+
+          {/* Finanças (Novo) */}
+          <button className={styles.actionCard} onClick={() => router.push('/finance?action=new')}>
+            <span>Lançar Finança</span>
+          </button>
+          <button className={styles.actionCard} onClick={() => router.push('/finance')}>
+            <span>Ver Extrato</span>
+          </button>
+
+          {/* Docs */}
+          <button className={styles.actionCard} onClick={() => setIsPdfModalOpen(true)}>
+            <span>Gerar Ficha</span>
+          </button>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+
+      <PdfGeneratorModal 
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+      />
     </div>
   );
 }

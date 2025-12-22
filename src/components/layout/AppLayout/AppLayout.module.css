@@ -1,0 +1,13 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background);
+}
+
+.main {
+  flex: 1;
+  padding-bottom: 80px; 
+  width: 100%;
+  max-width: 100%;
+}

@@ -1,0 +1,97 @@
+.container {
+  background-color: #FBFBFB;
+  min-height: 100vh;
+}
+
+.scrollContent {
+  padding: 20px 16px 40px 16px;
+}
+
+.actions { display: flex; gap: 16px; }
+.actionBtn { display: flex; align-items: center; justify-content: center; padding: 4px; }
+
+/* Hero Card */
+.heroCard {
+  background-color: #FFFFFF;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  margin-bottom: 32px;
+  border: 1px solid rgba(0,0,0,0.02);
+}
+
+.heroHeader {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;
+}
+
+.statusButton {
+  display: flex; align-items: center; gap: 6px;
+  background-color: #F2F2F7; padding: 6px 12px; border-radius: 20px;
+  transition: background 0.2s;
+}
+.statusButton:active { background-color: #E5E5EA; }
+
+.statusBadge { font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.ativo { color: var(--success); }
+.incubacao { color: #FF9500; }
+.alimentando { color: var(--primary); }
+.descanso { color: #8E8E93; }
+
+.statusArrow { color: #8E8E93; }
+.cageLabel { font-size: 13px; color: #8E8E93; font-weight: 500; }
+
+.birdsRow {
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+
+.birdLink {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1;
+}
+
+.avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background-color: #F2F2F7; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: 4px; border: 3px solid #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.maleAvatar { color: var(--primary); background-color: rgba(37, 145, 255, 0.05); }
+.femaleAvatar { color: #FF2D55; background-color: rgba(255, 45, 85, 0.05); }
+
+.birdName { font-weight: 700; font-size: 14px; color: var(--foreground); text-align: center; }
+.birdRing { font-size: 11px; color: #8E8E93; }
+
+.connector {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding-top: 16px;
+}
+
+.heartIcon { fill: #FF2D55; color: #FF2D55; animation: pulse 2s infinite; }
+.sinceDate { font-size: 10px; color: #C7C7CC; font-weight: 600; text-transform: uppercase; }
+
+/* Cycles Section */
+.sectionHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; padding: 0 4px;
+}
+.sectionTitle { font-size: 12px; color: #6D6D72; font-weight: 700; letter-spacing: 0.5px; }
+.addButton { font-size: 13px; color: var(--primary); font-weight: 600; }
+
+.cyclesList { display: flex; flex-direction: column; gap: 12px; }
+
+.emptyState {
+  background-color: #FFFFFF; border-radius: 16px; padding: 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  border: 1px dashed #C7C7CC;
+}
+.emptyIcon { font-size: 32px; }
+.emptyState p { font-size: 14px; color: #8E8E93; }
+.emptyBtn {
+  background-color: var(--primary); color: white; padding: 8px 16px;
+  border-radius: 12px; font-weight: 600; font-size: 13px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}

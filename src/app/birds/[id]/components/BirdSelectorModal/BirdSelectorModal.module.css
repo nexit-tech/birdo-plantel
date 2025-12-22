@@ -1,0 +1,134 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.sheet {
+  background-color: #FFFFFF;
+  width: 100%;
+  max-width: 500px;
+  height: 80vh;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.closeBtn {
+  background-color: #F2F2F7;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8E8E93;
+}
+
+.searchBox {
+  background-color: #F2F2F7;
+  border-radius: 12px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  margin-bottom: 16px;
+  gap: 8px;
+}
+
+.searchIcon { color: #8E8E93; }
+
+.input {
+  border: none;
+  background: none;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  font-size: 16px;
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  text-align: left;
+  gap: 12px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #F2F2F7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #8E8E93;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.itemName {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--foreground);
+}
+
+.itemRing {
+  font-size: 13px;
+  color: #8E8E93;
+}
+
+.itemBadge {
+  font-size: 10px;
+  background-color: #F2F2F7;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: #6D6D72;
+}
+
+.empty {
+  text-align: center;
+  padding-top: 40px;
+  color: #8E8E93;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

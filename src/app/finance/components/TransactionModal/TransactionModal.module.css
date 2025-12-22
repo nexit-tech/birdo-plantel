@@ -1,0 +1,50 @@
+.overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+  z-index: 200; display: flex; justify-content: center; align-items: flex-end;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.sheet {
+  background-color: #FFFFFF; width: 100%; max-width: 500px;
+  border-top-left-radius: 24px; border-top-right-radius: 24px;
+  padding: 24px; box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.title { font-family: var(--font-heading); font-size: 20px; font-weight: 700; }
+.closeBtn { color: #8E8E93; }
+
+.form { display: flex; flex-direction: column; gap: 20px; }
+
+.switchContainer {
+  display: flex; background-color: #F2F2F7; padding: 4px; border-radius: 12px; margin-bottom: 8px;
+}
+.switchBtn {
+  flex: 1; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 14px;
+  color: #8E8E93; transition: all 0.2s;
+}
+.activeIncome { background-color: #FFFFFF; color: var(--success); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.activeExpense { background-color: #FFFFFF; color: var(--danger); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.label { font-size: 13px; font-weight: 600; color: #6D6D72; margin-left: 4px; }
+
+.input, .inputMoney {
+  width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #E5E5EA;
+  background-color: #F9F9F9; font-size: 16px; outline: none;
+}
+.inputMoney { font-size: 24px; font-weight: 700; color: var(--foreground); padding: 16px; }
+
+.row { display: flex; gap: 12px; }
+
+.submitBtn {
+  margin-top: 12px; color: #FFFFFF; height: 50px; border-radius: 14px;
+  font-weight: 600; font-size: 16px;
+}
+.btnIncome { background-color: var(--success); }
+.btnExpense { background-color: var(--danger); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }

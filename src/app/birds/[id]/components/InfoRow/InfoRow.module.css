@@ -1,0 +1,23 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  min-height: 54px;
+}
+
+.label {
+  font-size: 15px;
+  color: var(--foreground);
+}
+
+.value {
+  font-size: 15px;
+  color: #8E8E93;
+  text-align: right;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

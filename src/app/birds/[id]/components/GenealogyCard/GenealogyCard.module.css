@@ -1,0 +1,133 @@
+.emptyCard {
+  flex: 1;
+  background-color: #FFFFFF;
+  border: 1px dashed #C7C7CC;
+  border-radius: 16px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.emptyCard:active {
+  background-color: #F2F2F7;
+  border-color: #8E8E93;
+}
+
+.iconCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.male { background-color: rgba(37, 145, 255, 0.1); color: var(--primary); }
+.female { background-color: rgba(255, 59, 48, 0.1); color: #FF2D55; }
+
+.emptyLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #8E8E93;
+}
+
+.filledCard {
+  flex: 1;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 16px;
+  padding: 12px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  position: relative;
+}
+
+.actionLayer {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+}
+
+.tinyAction {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background-color: #F2F2F7;
+  color: #8E8E93;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tinyAction:active {
+  background-color: #E5E5EA;
+}
+
+.danger {
+  color: #FF3B30;
+  background-color: rgba(255, 59, 48, 0.1);
+}
+
+.filledHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roleLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #8E8E93;
+  letter-spacing: 0.5px;
+}
+
+.genderIcon { font-size: 14px; font-weight: 700; }
+.textMale { color: var(--primary); }
+.textFemale { color: #FF2D55; }
+
+.birdInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  background-color: #F2F2F7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C7C7CC;
+}
+
+.texts { display: flex; flex-direction: column; }
+.name { font-size: 14px; font-weight: 700; color: var(--foreground); }
+.ring { font-size: 11px; color: #8E8E93; }
+
+.species {
+  font-size: 11px;
+  color: #6D6D72;
+  background-color: #F2F2F7;
+  padding: 4px 8px;
+  border-radius: 6px;
+  align-self: flex-start;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

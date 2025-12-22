@@ -1,0 +1,64 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.2s;
+  min-height: 56px;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.row:active {
+  background-color: #F2F2F7;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iconBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 16px;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.dangerLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: #FF3B30;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.value {
+  font-size: 15px;
+  color: #8E8E93;
+}
+
+.arrow {
+  color: #C7C7CC;
+}
