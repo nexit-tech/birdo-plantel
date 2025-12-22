@@ -6,24 +6,39 @@ import { Header } from '@/components/layout/Header/Header';
 import { SettingsRow } from './components/SettingsRow/SettingsRow';
 import { EditProfileModal } from './components/EditProfileModal/EditProfileModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal/ConfirmModal';
-import { MOCK_BREEDER } from '@/data/mock';
+import { useProfile } from '@/hooks';
 import { Breeder } from '@/types';
 import { User, Bell, Shield, LogOut, Mail, Award, MapPin } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function Settings() {
   const router = useRouter();
-  const [breeder, setBreeder] = useState<Breeder>(MOCK_BREEDER);
+  const { profile, isLoading, updateProfile } = useProfile();
+  
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  const handleUpdateBreeder = (updated: Breeder) => {
-    setBreeder(updated);
+  const handleUpdateBreeder = async (updated: Breeder) => {
+    await updateProfile(updated);
+    setIsEditModalOpen(false);
   };
 
   const handleLogout = () => {
-    // Simulação de logout
     router.push('/login'); 
+  };
+
+  if (isLoading) {
+    return <div className={styles.container}>Carregando perfil...</div>;
+  }
+
+  const displayProfile = profile || {
+    name: 'Usuário',
+    email: '-',
+    registryNumber: '-',
+    city: '-',
+    id: '',
+    phone: '',
+    photoUrl: ''
   };
 
   return (
@@ -32,12 +47,12 @@ export default function Settings() {
 
       <div className={styles.profileSection} onClick={() => setIsEditModalOpen(true)}>
         <div className={styles.avatarLarge}>
-          {breeder.name.charAt(0).toUpperCase()}
+          {displayProfile.name?.charAt(0).toUpperCase() || 'U'}
         </div>
         <div className={styles.profileInfo}>
-          <h2 className={styles.profileName}>{breeder.name}</h2>
-          <span className={styles.profileSub}>{breeder.email}</span>
-          <span className={styles.profileRegistry}>{breeder.registryNumber}</span>
+          <h2 className={styles.profileName}>{displayProfile.name}</h2>
+          <span className={styles.profileSub}>{displayProfile.email}</span>
+          <span className={styles.profileRegistry}>{displayProfile.registryNumber}</span>
         </div>
         <button className={styles.editBtn}>Editar</button>
       </div>
@@ -52,7 +67,7 @@ export default function Settings() {
         <SettingsRow 
           icon={<MapPin size={18} color="white" />} 
           label="Localização" 
-          value={breeder.city}
+          value={displayProfile.city}
         />
         <SettingsRow 
           icon={<Award size={18} color="white" />} 
@@ -92,7 +107,7 @@ export default function Settings() {
       <EditProfileModal 
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        breeder={breeder}
+        breeder={displayProfile}
         onSave={handleUpdateBreeder}
       />
 

@@ -19,19 +19,21 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('CALENDAR');
   
-  // Data de navegação (visualização)
-  const [displayYear, setDisplayYear] = useState(new Date().getFullYear());
-  const [displayMonth, setDisplayMonth] = useState(new Date().getMonth());
+  // Inicializa com a data atual se o value for inválido/vazio
+  const today = new Date();
+  const [displayYear, setDisplayYear] = useState(today.getFullYear());
+  const [displayMonth, setDisplayMonth] = useState(today.getMonth());
 
   useEffect(() => {
     if (value) {
-      const date = new Date(value + 'T12:00:00'); // Fix timezone issue
-      if (!isNaN(date.getTime())) {
-        setDisplayYear(date.getFullYear());
-        setDisplayMonth(date.getMonth());
+      // Garante o parse correto 'YYYY-MM-DD' para evitar problemas de fuso horário
+      const [y, m, d] = value.split('-').map(Number);
+      if (y && m && d) {
+        setDisplayYear(y);
+        setDisplayMonth(m - 1); // Mês em JS é 0-11
       }
     }
-  }, [isOpen, value]);
+  }, [value, isOpen]);
 
   const handleDaySelect = (day: number) => {
     const formattedMonth = String(displayMonth + 1).padStart(2, '0');
@@ -131,6 +133,9 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
     </div>
   );
 
+  // Formata para exibição apenas se houver valor válido
+  const displayValue = value ? formatDate(value) : (placeholder || 'Selecione');
+
   return (
     <div className={styles.wrapper}>
       {label && <label className={styles.label}>{label}</label>}
@@ -138,7 +143,7 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
       <div className={styles.inputTrigger} onClick={() => setIsOpen(true)}>
         <CalendarIcon size={20} className={styles.icon} />
         <span className={clsx(styles.valueText, !value && styles.placeholder)}>
-          {value ? formatDate(value) : (placeholder || 'Selecione uma data')}
+          {displayValue}
         </span>
       </div>
 

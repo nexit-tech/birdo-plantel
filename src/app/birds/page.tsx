@@ -5,13 +5,13 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header/Header';
 import { BirdCard } from './components/BirdCard/BirdCard';
 import { AddBirdModal } from './components/AddBirdModal/AddBirdModal';
-import { MOCK_BIRDS } from '@/data/mock';
+import { useBirds } from '@/hooks/useBirds';
 import { Search, Plus } from 'lucide-react';
 import { Bird } from '@/types';
 import styles from './page.module.css';
 
 function BirdsListContent() {
-  const [birds, setBirds] = useState<Bird[]>(MOCK_BIRDS);
+  const { birds, isLoading, createBird } = useBirds();
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -25,8 +25,10 @@ function BirdsListContent() {
     }
   }, [searchParams, router]);
 
-  const handleSaveBird = (newBird: Bird) => {
-    setBirds([newBird, ...birds]);
+  const handleSaveBird = async (birdData: Bird) => {
+    const { id, logs, weights, ...dataToSave } = birdData;
+    await createBird(dataToSave);
+    setIsModalOpen(false);
   };
 
   const filteredBirds = birds.filter(bird => 
@@ -60,13 +62,19 @@ function BirdsListContent() {
       </div>
 
       <div className={styles.list}>
-        {filteredBirds.map((bird) => (
-          <BirdCard key={bird.id} bird={bird} />
-        ))}
-        {filteredBirds.length === 0 && (
-          <div className={styles.empty}>
-            Nenhuma ave encontrada
-          </div>
+        {isLoading && filteredBirds.length === 0 ? (
+          <div className={styles.empty}>Carregando plantel...</div>
+        ) : (
+          <>
+            {filteredBirds.map((bird) => (
+              <BirdCard key={bird.id} bird={bird} />
+            ))}
+            {filteredBirds.length === 0 && (
+              <div className={styles.empty}>
+                Nenhuma ave encontrada
+              </div>
+            )}
+          </>
         )}
       </div>
 

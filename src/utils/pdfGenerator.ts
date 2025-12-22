@@ -1,22 +1,22 @@
 import { jsPDF } from 'jspdf';
 import { Bird, Breeder } from '@/types';
-import { MOCK_BIRDS } from '@/data/mock';
 
-const getBirdObj = (id?: string) => MOCK_BIRDS.find(b => b.id === id);
+export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: string, allBirds: Bird[]) => {
+  
+  const getBirdObj = (id?: string) => allBirds.find(b => b.id === id);
 
-const getBirdName = (id?: string) => {
-  if (!id) return '********';
-  const found = getBirdObj(id);
-  return found ? found.name.toUpperCase() : 'EXTERNO';
-};
+  const getBirdName = (id?: string) => {
+    if (!id) return '********';
+    const found = getBirdObj(id);
+    return found ? found.name.toUpperCase() : 'EXTERNO';
+  };
 
-const getBirdRing = (id?: string) => {
-  if (!id) return '---';
-  const found = getBirdObj(id);
-  return found ? found.ringNumber : '---';
-};
+  const getBirdRing = (id?: string) => {
+    if (!id) return '---';
+    const found = getBirdObj(id);
+    return found ? found.ringNumber : '---';
+  };
 
-export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: string) => {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -43,7 +43,8 @@ export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: strin
   doc.rect(margin, startY, cardW, cardH);
 
   doc.saveGraphicsState();
-  doc.setGState(new (doc as any).GState({ opacity: 0.15 }));
+  // @ts-ignore
+  doc.setGState(new doc.GState({ opacity: 0.15 }));
   doc.setFillColor(0, 0, 0);
   doc.circle(rightX + (rightW / 2), startY + (cardH / 2), 30, 'F');
   doc.restoreGraphicsState();
@@ -72,10 +73,10 @@ export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: strin
   doc.setFontSize(7);
   doc.text('CRIATÓRIO', lx + 24, ly + 6);
   doc.setFontSize(10);
-  doc.text(breeder.name.toUpperCase(), lx + 24, ly + 11);
+  doc.text(breeder.name ? breeder.name.toUpperCase() : 'CRIATÓRIO', lx + 24, ly + 11);
   doc.setFontSize(6);
   doc.setFont('helvetica', 'normal');
-  doc.text(`CTF: ${breeder.registryNumber} | ${breeder.city}`, lx + 24, ly + 16);
+  doc.text(`CTF: ${breeder.registryNumber || '-'} | ${breeder.city || '-'}`, lx + 24, ly + 16);
 
   const mainDataY = ly + headerH + 2;
   const mainDataH = 35;

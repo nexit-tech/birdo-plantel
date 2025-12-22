@@ -6,36 +6,36 @@ import { Bird as BirdIcon, Users, Egg, DollarSign } from 'lucide-react';
 import { Header } from '@/components/layout/Header/Header';
 import { Card } from '@/components/ui/Card/Card';
 import { PdfGeneratorModal } from '@/components/features/PdfGeneratorModal/PdfGeneratorModal';
-import { MOCK_STATS } from '@/data/mock';
+import { useDashboard } from '@/hooks';
 import styles from './page.module.css';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [stats] = useState(MOCK_STATS);
+  const { stats, isLoading } = useDashboard();
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const dashboardStats = [
     { 
       label: 'Total de Aves', 
-      value: stats.totalBirds, 
+      value: isLoading ? '-' : stats.totalBirds, 
       icon: BirdIcon,
       color: '#2563eb' 
     },
     { 
       label: 'Casais Formados', 
-      value: stats.totalPairs, 
+      value: isLoading ? '-' : stats.totalPairs, 
       icon: Users,
       color: '#db2777' 
     },
     { 
       label: 'Filhotes Ativos', 
-      value: stats.activeChicks, 
+      value: isLoading ? '-' : stats.activeChicks, 
       icon: Egg,
       color: '#d97706' 
     },
     { 
       label: 'Disponíveis', 
-      value: stats.availableForSale, 
+      value: isLoading ? '-' : stats.availableForSale, 
       icon: DollarSign,
       color: '#16a34a' 
     },
@@ -62,12 +62,10 @@ export default function Dashboard() {
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Ações Rápidas</h2>
         <div className={styles.actionsGrid}>
-          {/* Aves */}
           <button className={styles.actionCard} onClick={() => router.push('/birds?action=new')}>
             <span>Nova Ave</span>
           </button>
           
-          {/* Casais */}
           <button className={styles.actionCard} onClick={() => router.push('/pairs?action=new')}>
             <span>Novo Casal</span>
           </button>
@@ -75,7 +73,6 @@ export default function Dashboard() {
             <span>Registrar Postura</span>
           </button>
 
-          {/* Finanças (Novo) */}
           <button className={styles.actionCard} onClick={() => router.push('/finance?action=new')}>
             <span>Lançar Finança</span>
           </button>
@@ -83,7 +80,6 @@ export default function Dashboard() {
             <span>Ver Extrato</span>
           </button>
 
-          {/* Docs */}
           <button className={styles.actionCard} onClick={() => setIsPdfModalOpen(true)}>
             <span>Gerar Ficha</span>
           </button>

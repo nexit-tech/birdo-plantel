@@ -8,21 +8,21 @@ import { TransactionRow } from './components/TransactionRow/TransactionRow';
 import { TransactionModal } from './components/TransactionModal/TransactionModal';
 import { FinanceChart } from './components/FinanceChart/FinanceChart';
 import { ConfirmModal } from '@/components/ui/ConfirmModal/ConfirmModal';
-import { MOCK_TRANSACTIONS } from '@/data/mock';
+import { useFinance } from '@/hooks'; // Hook conectado
 import { Transaction } from '@/types';
 import { Plus, Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 import styles from './page.module.css';
 
 function FinanceContent() {
-  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
+  // Substituindo useState(MOCK) pelo hook do Supabase
+  const { transactions, isLoading, addTransaction, updateTransaction, deleteTransaction } = useFinance();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Transaction | null>(null);
   
-  // Hooks de Navegação
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Verifica se veio com comando de nova transação
   useEffect(() => {
     if (searchParams.get('action') === 'new') {
       setEditingItem(null);
@@ -35,16 +35,24 @@ function FinanceContent() {
     isOpen: false, title: '', message: '', onConfirm: () => {}
   });
 
+  // Mantendo sua lógica original de cálculo
   const income = transactions.filter(t => t.type === 'RECEITA').reduce((acc, curr) => acc + curr.amount, 0);
   const expense = transactions.filter(t => t.type === 'DESPESA').reduce((acc, curr) => acc + curr.amount, 0);
   const balance = income - expense;
 
-  const handleSave = (data: Transaction) => {
-    setTransactions(prev => {
-      const exists = prev.some(t => t.id === data.id);
-      if (exists) return prev.map(t => t.id === data.id ? data : t);
-      return [data, ...prev];
-    });
+  const handleSave = async (data: Transaction) => {
+    // Se o item já tem ID e estamos editando (existe no array), é update
+    // Caso contrário, é create.
+    // O Modal gera um ID fake se for novo, mas vamos ignorar isso no addTransaction
+    
+    if (editingItem) {
+      await updateTransaction(data);
+    } else {
+      // Removemos o ID gerado pelo frontend para deixar o banco criar o UUID real
+      const { id, ...newTransaction } = data;
+      await addTransaction(newTransaction);
+    }
+    setIsModalOpen(false);
   };
 
   const handleEdit = (item: Transaction) => {
@@ -57,8 +65,8 @@ function FinanceContent() {
       isOpen: true,
       title: 'Excluir Transação?',
       message: 'Esta ação removerá o registro financeiro permanentemente.',
-      onConfirm: () => {
-        setTransactions(prev => prev.filter(t => t.id !== id));
+      onConfirm: async () => {
+        await deleteTransaction(id);
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
       }
     });
@@ -112,16 +120,22 @@ function FinanceContent() {
 
         <div className={styles.sectionTitle}>ÚLTIMAS TRANSAÇÕES</div>
         <div className={styles.list}>
-          {transactions.map(transaction => (
-            <TransactionRow 
-              key={transaction.id} 
-              transaction={transaction}
-              onEdit={() => handleEdit(transaction)}
-              onDelete={() => handleDelete(transaction.id)}
-            />
-          ))}
-          {transactions.length === 0 && (
-             <div className={styles.emptyState}>Nenhuma transação registrada.</div>
+          {isLoading && transactions.length === 0 ? (
+             <div className={styles.emptyState}>Carregando...</div>
+          ) : (
+            <>
+              {transactions.map(transaction => (
+                <TransactionRow 
+                  key={transaction.id} 
+                  transaction={transaction}
+                  onEdit={() => handleEdit(transaction)}
+                  onDelete={() => handleDelete(transaction.id)}
+                />
+              ))}
+              {transactions.length === 0 && (
+                 <div className={styles.emptyState}>Nenhuma transação registrada.</div>
+              )}
+            </>
           )}
         </div>
       </div>

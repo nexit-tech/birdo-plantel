@@ -1,39 +1,30 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
 import { Header } from '@/components/layout/Header/Header';
 import { PairCard } from './components/PairCard/PairCard';
 import { NewPairModal } from './components/NewPairModal/NewPairModal';
-import { MOCK_PAIRS, MOCK_BIRDS } from '@/data/mock';
+import { usePairs, useBirds } from '@/hooks';
 import { Plus } from 'lucide-react';
 import { Pair } from '@/types';
 import styles from './page.module.css';
 
 function PairsListContent() {
-  const [pairs, setPairs] = useState<Pair[]>(MOCK_PAIRS);
+  const { pairs, isLoading, createPair } = usePairs();
+  const { birds } = useBirds();
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (searchParams.get('action') === 'new') {
-      setIsModalOpen(true);
-      router.replace('/pairs', { scroll: false });
-    }
-  }, [searchParams, router]);
-
-  const handleSavePair = (newPair: Pair) => {
-    setPairs([newPair, ...pairs]);
+  const handleSavePair = async (pairData: Pair) => {
+    const { id, cycles, ...data } = pairData;
+    await createPair(data);
+    setIsModalOpen(false);
   };
-
-  const getBird = (id: string) => MOCK_BIRDS.find(b => b.id === id);
 
   return (
     <div className={styles.container}>
       <Header 
-        title="Meus Casais" 
+        title="Casais" 
         action={
           <button className={styles.addButton} onClick={() => setIsModalOpen(true)}>
             <Plus size={24} />
@@ -42,16 +33,19 @@ function PairsListContent() {
       />
 
       <div className={styles.list}>
-        {pairs.map((pair) => (
-          <PairCard 
-            key={pair.id} 
-            pair={pair} 
-            male={getBird(pair.maleId)}
-            female={getBird(pair.femaleId)}
-          />
-        ))}
-        {pairs.length === 0 && (
-          <div className={styles.empty}>Nenhum casal formado</div>
+        {isLoading && pairs.length === 0 ? (
+           <div className={styles.empty}>Carregando casais...</div>
+        ) : (
+          <>
+            {pairs.map((pair) => (
+              <PairCard key={pair.id} pair={pair} />
+            ))}
+            {pairs.length === 0 && (
+              <div className={styles.empty}>
+                Nenhum casal formado
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -59,6 +53,8 @@ function PairsListContent() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSavePair}
+        availableMales={birds.filter(b => b.gender === 'MACHO')}
+        availableFemales={birds.filter(b => b.gender === 'FEMEA')}
       />
     </div>
   );

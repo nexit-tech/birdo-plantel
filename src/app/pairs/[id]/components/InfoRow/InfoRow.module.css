@@ -1,0 +1,23 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #E5E5EA;
+}
+
+.last {
+  border-bottom: none;
+}
+
+.label {
+  color: #8E8E93;
+  font-size: 15px;
+}
+
+.value {
+  color: #000;
+  font-weight: 500;
+  font-size: 15px;
+  text-align: right;
+}

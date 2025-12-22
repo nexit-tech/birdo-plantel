@@ -1,28 +1,39 @@
 'use client';
 
-import { use, useState, useEffect } from 'react';
-import Link from 'next/link';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MOCK_PAIRS, MOCK_BIRDS } from '@/data/mock';
+import { usePair, useBirds } from '@/hooks';
 import { Header } from '@/components/layout/Header/Header';
+import { InfoRow } from './components/InfoRow/InfoRow';
+import { GenealogyCard } from './components/GenealogyCard/GenealogyCard';
 import { CycleCard } from './components/CycleCard/CycleCard';
 import { CycleModal } from './components/CycleModal/CycleModal';
 import { PairStatusModal } from './components/PairStatusModal/PairStatusModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal/ConfirmModal';
-import { Heart, Edit2, Trash2, ChevronDown } from 'lucide-react';
-import { Pair, BreedingCycle, PairStatus } from '@/types';
+import { Trash2, Plus, ChevronRight } from 'lucide-react';
+import { BreedingCycle, PairStatus } from '@/types';
 import styles from './page.module.css';
 import clsx from 'clsx';
 
 export default function PairDetails({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = use(params);
+  const { id } = use(params);
   const router = useRouter();
-  const [pair, setPair] = useState<Pair | null>(null);
   
+  const { 
+    pair, 
+    loading, 
+    updateStatus, 
+    addCycle, 
+    updateCycle, 
+    deleteCycle, 
+    deletePair 
+  } = usePair(id);
+
+  const { birds } = useBirds();
+
   const [isCycleModalOpen, setIsCycleModalOpen] = useState(false);
   const [editingCycle, setEditingCycle] = useState<BreedingCycle | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
     title: '',
@@ -30,52 +41,19 @@ export default function PairDetails({ params }: { params: Promise<{ id: string }
     onConfirm: () => {}
   });
 
-  useEffect(() => {
-    const found = MOCK_PAIRS.find((p) => p.id === unwrappedParams.id);
-    if (found) setPair(found);
-  }, [unwrappedParams.id]);
+  if (loading) return <div className={styles.loading}>Carregando...</div>;
+  if (!pair) return <div className={styles.error}>Casal não encontrado</div>;
 
-  if (!pair) return null;
+  const maleBird = birds.find(b => b.id === pair.maleId);
+  const femaleBird = birds.find(b => b.id === pair.femaleId);
 
-  const male = MOCK_BIRDS.find(b => b.id === pair.maleId);
-  const female = MOCK_BIRDS.find(b => b.id === pair.femaleId);
-
-  const handleSaveCycle = (cycle: BreedingCycle) => {
-    setPair(prev => {
-      if (!prev) return null;
-      const exists = prev.cycles.some(c => c.id === cycle.id);
-      const newCycles = exists 
-        ? prev.cycles.map(c => c.id === cycle.id ? cycle : c)
-        : [cycle, ...prev.cycles];
-      
-      return { ...prev, cycles: newCycles };
-    });
-  };
-
-  const handleEditCycle = (cycle: BreedingCycle) => {
-    setEditingCycle(cycle);
-    setIsCycleModalOpen(true);
-  };
-
-  const handleAddCycle = () => {
-    setEditingCycle(null);
-    setIsCycleModalOpen(true);
-  };
-
-  const handleStatusChange = (status: PairStatus) => {
-    setPair(prev => prev ? ({ ...prev, status }) : null);
-  };
-
-  const handleDeletePair = () => {
-    setConfirmConfig({
-      isOpen: true,
-      title: 'Desfazer Casal?',
-      message: 'O histórico reprodutivo será mantido, mas o vínculo será desfeito.',
-      onConfirm: () => {
-        router.push('/pairs');
-        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
-      }
-    });
+  const handleSaveCycle = async (cycle: BreedingCycle) => {
+    if (editingCycle) {
+      await updateCycle(cycle);
+    } else {
+      await addCycle(cycle);
+    }
+    setIsCycleModalOpen(false);
   };
 
   return (
@@ -84,92 +62,86 @@ export default function PairDetails({ params }: { params: Promise<{ id: string }
         title={pair.name} 
         showBack 
         action={
-          <div className={styles.actions}>
-             <button className={styles.actionBtn} onClick={handleDeletePair}>
-                <Trash2 size={22} color="var(--danger)" />
-             </button>
-             <button className={styles.actionBtn}>
-                <Edit2 size={22} color="var(--primary)" />
-             </button>
-          </div>
+          <button className={styles.deleteBtn} onClick={() => {
+            setConfirmConfig({
+              isOpen: true,
+              title: 'Excluir Casal',
+              message: 'Confirma a exclusão?',
+              onConfirm: async () => {
+                await deletePair();
+                router.replace('/pairs');
+              }
+            });
+          }}>
+            <Trash2 size={20} />
+          </button>
         }
       />
 
-      <div className={styles.scrollContent}>
-        <div className={styles.heroCard}>
-          <div className={styles.heroHeader}>
-             <button className={styles.statusButton} onClick={() => setIsStatusModalOpen(true)}>
-                <span className={clsx(styles.statusBadge, styles[pair.status.toLowerCase()])}>{pair.status.replace('_', ' ')}</span>
-                <ChevronDown size={14} className={styles.statusArrow} />
-             </button>
-             <span className={styles.cageLabel}>{pair.cage}</span>
+      <div className={styles.content}>
+        <div className={styles.card}>
+          <div className={styles.statusRow} onClick={() => setIsStatusModalOpen(true)}>
+             <span className={styles.label}>Status</span>
+             <div className={styles.statusBadge}>
+                <span className={clsx(styles.badge, styles[pair.status.toLowerCase()])}>{pair.status}</span>
+                <ChevronRight size={16} />
+             </div>
           </div>
+          <InfoRow label="Gaiola" value={pair.cage} />
+          <InfoRow label="Início" value={new Date(pair.startDate).toLocaleDateString('pt-BR')} isLast />
+        </div>
 
-          <div className={styles.birdsRow}>
-            <Link href={`/birds/${male?.id}`} className={styles.birdLink}>
-              <div className={clsx(styles.avatar, styles.maleAvatar)}>♂</div>
-              <span className={styles.birdName}>{male?.name}</span>
-              <span className={styles.birdRing}>{male?.ringNumber}</span>
-            </Link>
-
-            <div className={styles.connector}>
-               <Heart size={24} className={styles.heartIcon} />
-               <span className={styles.sinceDate}>Desde {new Date(pair.startDate).getFullYear()}</span>
-            </div>
-
-            <Link href={`/birds/${female?.id}`} className={styles.birdLink}>
-              <div className={clsx(styles.avatar, styles.femaleAvatar)}>♀</div>
-              <span className={styles.birdName}>{female?.name}</span>
-              <span className={styles.birdRing}>{female?.ringNumber}</span>
-            </Link>
-          </div>
+        <div className={styles.sectionTitle}>AVES</div>
+        <div className={styles.birdsGrid}>
+          <GenealogyCard role="PAI" bird={maleBird} readonly />
+          <GenealogyCard role="MAE" bird={femaleBird} readonly />
         </div>
 
         <div className={styles.sectionHeader}>
-          <div className={styles.sectionTitle}>HISTÓRICO DE POSTURAS</div>
-          <button className={styles.addButton} onClick={handleAddCycle}>+ Nova Postura</button>
+          <div className={styles.sectionTitle}>CICLOS</div>
+          <button className={styles.addBtn} onClick={() => { setEditingCycle(null); setIsCycleModalOpen(true); }}>
+            <Plus size={20} />
+          </button>
         </div>
 
         <div className={styles.cyclesList}>
-          {pair.cycles && pair.cycles.length > 0 ? (
-            pair.cycles.map(cycle => (
-              <CycleCard 
-                key={cycle.id} 
-                cycle={cycle} 
-                onClick={() => handleEditCycle(cycle)} 
-              />
-            ))
-          ) : (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>🥚</div>
-              <p>Nenhuma postura registrada.</p>
-              <button className={styles.emptyBtn} onClick={handleAddCycle}>Iniciar Reprodução</button>
-            </div>
-          )}
+          {pair.cycles?.map(cycle => (
+            <CycleCard 
+              key={cycle.id} 
+              cycle={cycle}
+              onClick={() => { setEditingCycle(cycle); setIsCycleModalOpen(true); }}
+              onDelete={(e) => {
+                e.stopPropagation();
+                setConfirmConfig({
+                  isOpen: true, title: 'Excluir Ciclo', message: 'Confirma?',
+                  onConfirm: () => deleteCycle(cycle.id)
+                });
+              }}
+            />
+          ))}
         </div>
       </div>
 
       <CycleModal 
-        isOpen={isCycleModalOpen}
-        onClose={() => setIsCycleModalOpen(false)}
-        initialData={editingCycle}
+        isOpen={isCycleModalOpen} 
+        onClose={() => setIsCycleModalOpen(false)} 
         onSave={handleSaveCycle}
+        initialData={editingCycle}
       />
 
-      <PairStatusModal 
+      <PairStatusModal
         isOpen={isStatusModalOpen}
         onClose={() => setIsStatusModalOpen(false)}
         currentStatus={pair.status}
-        onSelect={handleStatusChange}
+        onSelect={(s) => { updateStatus(s); setIsStatusModalOpen(false); }}
       />
-
+      
       <ConfirmModal 
         isOpen={confirmConfig.isOpen}
         title={confirmConfig.title}
         message={confirmConfig.message}
         onConfirm={confirmConfig.onConfirm}
         onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))}
-        confirmLabel="Desfazer"
         isDanger
       />
     </div>

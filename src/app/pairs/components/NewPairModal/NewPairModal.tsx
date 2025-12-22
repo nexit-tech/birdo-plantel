@@ -1,167 +1,134 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Search } from 'lucide-react';
-import { Bird, Pair, PairStatus } from '@/types';
+import { X } from 'lucide-react';
+import { Pair, PairStatus, Bird } from '@/types';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
-import { MOCK_BIRDS } from '@/data/mock';
+import { Combobox } from '@/components/ui/Combobox/Combobox';
 import styles from './NewPairModal.module.css';
-import clsx from 'clsx';
 
 interface NewPairModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (pair: Pair) => void;
+  availableMales: Bird[];
+  availableFemales: Bird[];
 }
 
-export function NewPairModal({ isOpen, onClose, onSave }: NewPairModalProps) {
-  const [step, setStep] = useState<'DETAILS' | 'SELECT_MALE' | 'SELECT_FEMALE'>('DETAILS');
+export function NewPairModal({ 
+  isOpen, 
+  onClose, 
+  onSave, 
+  availableMales, 
+  availableFemales 
+}: NewPairModalProps) {
   const [formData, setFormData] = useState({
     name: '',
-    startDate: new Date().toISOString().split('T')[0],
-    cage: '',
     maleId: '',
-    femaleId: ''
+    femaleId: '',
+    startDate: '',
+    cage: '',
+    status: 'ATIVO' as PairStatus
   });
-  const [searchTerm, setSearchTerm] = useState('');
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
-    if (!formData.maleId || !formData.femaleId) return;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
+    if (!formData.maleId || !formData.femaleId) {
+      return;
+    }
+
     const newPair: Pair = {
       id: Math.random().toString(),
-      name: formData.name || `Casal ${Math.floor(Math.random() * 1000)}`,
-      startDate: formData.startDate,
-      cage: formData.cage,
-      maleId: formData.maleId,
-      femaleId: formData.femaleId,
-      status: 'ATIVO'
+      ...formData,
+      cycles: []
     };
 
     onSave(newPair);
-    onClose();
-    setStep('DETAILS');
-    setFormData({ name: '', startDate: '', cage: '', maleId: '', femaleId: '' });
+    setFormData({
+      name: '',
+      maleId: '',
+      femaleId: '',
+      startDate: '',
+      cage: '',
+      status: 'ATIVO'
+    });
   };
 
-  const renderBirdSelector = (gender: 'MACHO' | 'FEMEA') => {
-    const candidates = MOCK_BIRDS.filter(b => 
-      b.gender === gender && 
-      (b.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-       b.ringNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-
-    return (
-      <div className={styles.selectorContainer}>
-        <div className={styles.searchBox}>
-          <Search size={18} className={styles.searchIcon} />
-          <input 
-            className={styles.searchInput}
-            placeholder="Buscar ave..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
-          />
-        </div>
-        <div className={styles.list}>
-          {candidates.map(bird => (
-            <button key={bird.id} className={styles.item} onClick={() => {
-              setFormData(prev => ({ ...prev, [gender === 'MACHO' ? 'maleId' : 'femaleId']: bird.id }));
-              setStep('DETAILS');
-              setSearchTerm('');
-            }}>
-              <div className={styles.itemAvatar}>{gender === 'MACHO' ? '♂' : '♀'}</div>
-              <div className={styles.itemInfo}>
-                <span className={styles.itemName}>{bird.name}</span>
-                <span className={styles.itemRing}>{bird.ringNumber}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-        <button className={styles.backBtn} onClick={() => setStep('DETAILS')}>Voltar</button>
-      </div>
-    );
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const selectedMale = MOCK_BIRDS.find(b => b.id === formData.maleId);
-  const selectedFemale = MOCK_BIRDS.find(b => b.id === formData.femaleId);
+  const maleOptions = availableMales.map(b => ({ value: b.id, label: `${b.name} (${b.ringNumber})` }));
+  const femaleOptions = availableFemales.map(b => ({ value: b.id, label: `${b.name} (${b.ringNumber})` }));
 
   return (
     <div className={styles.overlay}>
       <div className={styles.sheet}>
         <div className={styles.header}>
-          <h3 className={styles.title}>
-            {step === 'DETAILS' ? 'Novo Casal' : step === 'SELECT_MALE' ? 'Selecionar Macho' : 'Selecionar Fêmea'}
-          </h3>
-          <button onClick={onClose} className={styles.closeBtn}><X size={24} /></button>
+          <h3 className={styles.title}>Novo Casal</h3>
+          <button onClick={onClose} className={styles.closeBtn}>
+            <X size={24} />
+          </button>
         </div>
 
-        {step === 'DETAILS' ? (
-          <div className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label}>Nome do Casal</label>
+            <input
+              required
+              className={styles.input}
+              placeholder="Ex: Casal Principal"
+              value={formData.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+            />
+          </div>
+
+          <div className={styles.row}>
             <div className={styles.field}>
-              <label className={styles.label}>Nome do Casal (Opcional)</label>
-              <input 
-                className={styles.input} 
-                placeholder="Ex: Casal 01"
-                value={formData.name}
-                onChange={e => setFormData({...formData, name: e.target.value})}
+              <Combobox 
+                label="Macho"
+                value={formData.maleId}
+                options={maleOptions}
+                onChange={(val) => handleChange('maleId', val)}
               />
             </div>
-
-            <div className={styles.slotsRow}>
-              <button className={clsx(styles.slot, formData.maleId && styles.filledSlot)} onClick={() => setStep('SELECT_MALE')}>
-                <span className={styles.slotLabel}>MACHO</span>
-                {selectedMale ? (
-                  <div className={styles.selectedInfo}>
-                    <span className={styles.selectedName}>{selectedMale.name}</span>
-                    <span className={styles.selectedRing}>{selectedMale.ringNumber}</span>
-                  </div>
-                ) : <span className={styles.placeholder}>+ Selecionar</span>}
-              </button>
-              
-              <button className={clsx(styles.slot, formData.femaleId && styles.filledSlot)} onClick={() => setStep('SELECT_FEMALE')}>
-                <span className={styles.slotLabel}>FÊMEA</span>
-                {selectedFemale ? (
-                  <div className={styles.selectedInfo}>
-                    <span className={styles.selectedName}>{selectedFemale.name}</span>
-                    <span className={styles.selectedRing}>{selectedFemale.ringNumber}</span>
-                  </div>
-                ) : <span className={styles.placeholder}>+ Selecionar</span>}
-              </button>
+            <div className={styles.field}>
+              <Combobox 
+                label="Fêmea"
+                value={formData.femaleId}
+                options={femaleOptions}
+                onChange={(val) => handleChange('femaleId', val)}
+              />
             </div>
-
-            <div className={styles.row}>
-              <div className={styles.field}>
-                <DatePicker 
-                  label="Data de Início"
-                  value={formData.startDate}
-                  onChange={date => setFormData({...formData, startDate: date})}
-                />
-              </div>
-              <div className={styles.field}>
-                <label className={styles.label}>Gaiola</label>
-                <input 
-                  className={styles.input} 
-                  placeholder="Nº"
-                  value={formData.cage}
-                  onChange={e => setFormData({...formData, cage: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <button 
-              className={styles.submitBtn} 
-              disabled={!formData.maleId || !formData.femaleId}
-              onClick={handleSubmit}
-            >
-              Criar Casal
-            </button>
           </div>
-        ) : (
-          renderBirdSelector(step === 'SELECT_MALE' ? 'MACHO' : 'FEMEA')
-        )}
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <DatePicker 
+                label="Data Início"
+                value={formData.startDate}
+                onChange={(date) => handleChange('startDate', date)}
+                placeholder="DD/MM/AAAA"
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Gaiola</label>
+              <input
+                className={styles.input}
+                placeholder="Nº"
+                value={formData.cage}
+                onChange={(e) => handleChange('cage', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button type="submit" className={styles.submitBtn}>
+            Formar Casal
+          </button>
+        </form>
       </div>
     </div>
   );

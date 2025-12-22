@@ -44,14 +44,14 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      id: initialData?.id || Math.random().toString(),
+      id: initialData?.id || Math.random().toString(), // ID temporário, será tratado no page.tsx
       type,
       amount: Number(formData.amount.replace(',', '.')),
       category: formData.category,
       date: formData.date,
       description: formData.description
     });
-    onClose();
+    // Não fechamos aqui, o pai fecha após o save async
   };
 
   const incomeCategories = [

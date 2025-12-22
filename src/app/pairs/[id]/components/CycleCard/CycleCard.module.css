@@ -1,85 +1,68 @@
 .card {
-  background-color: #FFFFFF;
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   padding: 16px;
-  border: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  cursor: pointer;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   position: relative;
-  transition: transform 0.2s;
 }
-
-.card:active { transform: scale(0.99); }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  margin-bottom: 12px;
 }
 
-.dateInfo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.date {
+  font-weight: 600;
+  font-size: 15px;
 }
 
-.icon { color: #8E8E93; }
-.date { font-size: 13px; color: #6D6D72; font-weight: 500; }
-
-.badge {
-  font-size: 10px;
-  font-weight: 700;
+.status {
+  font-size: 11px;
   padding: 4px 8px;
-  border-radius: 8px;
-  text-transform: uppercase;
+  border-radius: 12px;
+  font-weight: 600;
 }
 
-.active { background-color: rgba(37, 145, 255, 0.1); color: var(--primary); }
-.done { background-color: #F2F2F7; color: #8E8E93; }
+.active { background: #E8F5E9; color: #2E7D32; }
+.closed { background: #F2F2F7; color: #8E8E93; }
 
-.statsRow {
+.stats {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 8px 0;
+  gap: 24px;
+  margin-bottom: 8px;
 }
 
 .stat {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
 }
 
-.statIconWrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.value {
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.statInfo { display: flex; flex-direction: column; }
-.statValue { font-family: var(--font-heading); font-size: 20px; font-weight: 700; color: var(--foreground); }
-.statLabel { font-size: 12px; color: #8E8E93; }
-
-.divider { width: 1px; height: 32px; background-color: rgba(0,0,0,0.05); }
+.label {
+  font-size: 12px;
+  color: #8E8E93;
+}
 
 .notes {
   font-size: 13px;
-  color: #6D6D72;
-  background-color: #F9F9F9;
-  padding: 8px 12px;
-  border-radius: 8px;
-  line-height: 1.4;
+  color: #666;
+  margin-top: 8px;
+  background: #F9F9F9;
+  padding: 8px;
+  border-radius: 6px;
 }
 
-.arrowLayer {
+.deleteBtn {
   position: absolute;
-  top: 16px;
+  bottom: 16px;
   right: 16px;
-  opacity: 0; 
+  color: #FF3B30;
+  background: none;
+  border: none;
 }

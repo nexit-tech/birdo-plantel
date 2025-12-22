@@ -16,8 +16,8 @@ export interface BirdLog {
 export interface BirdWeight {
   id: string;
   date: string;
-  weight: number; // gramas
-  height?: number; // cm (novo campo)
+  weight: number;
+  height?: number;
 }
 
 export interface Bird {

@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { X, Search, FileText, Download } from 'lucide-react';
-import { MOCK_BIRDS, MOCK_BREEDER } from '@/data/mock';
 import { Bird } from '@/types';
 import { generatePedigreePDF } from '@/utils/pdfGenerator';
-import { ColorPicker } from '@/components/ui/ColorPicker/ColorPicker'; // Novo Import
+import { ColorPicker } from '@/components/ui/ColorPicker/ColorPicker';
+import { useBirds, useProfile } from '@/hooks';
 import styles from './PdfGeneratorModal.module.css';
 
 interface PdfGeneratorModalProps {
@@ -14,20 +14,24 @@ interface PdfGeneratorModalProps {
 }
 
 export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
+  const { birds } = useBirds();
+  const { profile } = useProfile();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBird, setSelectedBird] = useState<Bird | null>(null);
   const [bgColor, setBgColor] = useState('#FFFFFF');
 
   if (!isOpen) return null;
 
-  const filtered = MOCK_BIRDS.filter(b => 
+  const filtered = birds.filter(b => 
     b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     b.ringNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDownload = () => {
-    if (selectedBird) {
-      generatePedigreePDF(selectedBird, MOCK_BREEDER, bgColor);
+    if (selectedBird && profile) {
+      // Passamos 'birds' (lista completa) como 4º argumento
+      generatePedigreePDF(selectedBird, profile, bgColor, birds);
     }
   };
 
@@ -83,7 +87,6 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
               </p>
             </div>
 
-            {/* Novo Componente ColorPicker */}
             <div className={styles.optionsSection}>
               <ColorPicker 
                 label="Cor do Fundo da Ficha"

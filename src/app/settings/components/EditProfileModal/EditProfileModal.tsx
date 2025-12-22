@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Breeder } from '@/types';
 import styles from './EditProfileModal.module.css';
@@ -8,12 +8,26 @@ import styles from './EditProfileModal.module.css';
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  breeder: Breeder;
+  breeder: Breeder | null;
   onSave: (data: Breeder) => void;
 }
 
 export function EditProfileModal({ isOpen, onClose, breeder, onSave }: EditProfileModalProps) {
-  const [formData, setFormData] = useState<Breeder>(breeder);
+  const [formData, setFormData] = useState<Breeder>({
+    id: '',
+    name: '',
+    email: '',
+    registryNumber: '',
+    phone: '',
+    city: '',
+    photoUrl: ''
+  });
+
+  useEffect(() => {
+    if (breeder) {
+      setFormData(breeder);
+    }
+  }, [breeder, isOpen]);
 
   if (!isOpen) return null;
 

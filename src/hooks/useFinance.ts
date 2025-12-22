@@ -1,0 +1,86 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { mapTransactionFromDB } from '@/utils/mappers';
+import { Transaction } from '@/types';
+
+export function useFinance() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .order('date', { ascending: false });
+
+      if (error) throw error;
+      setTransactions((data || []).map(mapTransactionFromDB));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+    const dbTransaction = {
+      type: transaction.type,
+      amount: transaction.amount,
+      category: transaction.category,
+      date: transaction.date,
+      description: transaction.description
+    };
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([dbTransaction])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const newTransaction = mapTransactionFromDB(data);
+    setTransactions(prev => [newTransaction, ...prev]);
+  };
+
+  const updateTransaction = async (transaction: Transaction) => {
+    const dbTransaction = {
+      type: transaction.type,
+      amount: transaction.amount,
+      category: transaction.category,
+      date: transaction.date,
+      description: transaction.description
+    };
+
+    const { error } = await supabase
+      .from('transactions')
+      .update(dbTransaction)
+      .eq('id', transaction.id);
+
+    if (error) throw error;
+
+    setTransactions(prev => 
+      prev.map(t => t.id === transaction.id ? transaction : t)
+    );
+  };
+
+  const deleteTransaction = async (id: string) => {
+    await supabase.from('transactions').delete().eq('id', id);
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  return {
+    transactions,
+    isLoading,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    refetch: fetchTransactions
+  };
+}
