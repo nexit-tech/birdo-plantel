@@ -5,7 +5,7 @@ import { Header } from '@/components/layout/Header/Header';
 import { PairCard } from './components/PairCard/PairCard';
 import { NewPairModal } from './components/NewPairModal/NewPairModal';
 import { usePairs, useBirds } from '@/hooks';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { Pair } from '@/types';
 import styles from './page.module.css';
 
@@ -14,6 +14,7 @@ function PairsListContent() {
   const { birds } = useBirds();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleSavePair = async (pairData: Pair) => {
     const { id, cycles, ...data } = pairData;
@@ -21,10 +22,19 @@ function PairsListContent() {
     setIsModalOpen(false);
   };
 
+  const filteredPairs = pairs.filter(pair => {
+    const search = searchTerm.toLowerCase();
+    return (
+      pair.name?.toLowerCase().includes(search) ||
+      pair.maleId?.toLowerCase().includes(search) ||
+      pair.femaleId?.toLowerCase().includes(search)
+    );
+  });
+
   return (
     <div className={styles.container}>
       <Header 
-        title="Casais" 
+        title="Meus Casais" 
         action={
           <button className={styles.addButton} onClick={() => setIsModalOpen(true)}>
             <Plus size={24} />
@@ -32,15 +42,30 @@ function PairsListContent() {
         }
       />
 
+      <div className={styles.searchContainer}>
+        <div className={styles.searchBar}>
+          <Search size={20} />
+          <input
+            type="text"
+            placeholder="Buscar por nome, anilha..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+
       <div className={styles.list}>
         {isLoading && pairs.length === 0 ? (
-           <div className={styles.empty}>Carregando casais...</div>
+            <div className={styles.empty}>Carregando casais...</div>
         ) : (
           <>
-            {pairs.map((pair) => (
+            {filteredPairs.map((pair) => (
               <PairCard key={pair.id} pair={pair} />
             ))}
-            {pairs.length === 0 && (
+            {filteredPairs.length === 0 && pairs.length > 0 && (
+              <div className={styles.empty}>Nenhum resultado para a busca</div>
+            )}
+            {pairs.length === 0 && !isLoading && (
               <div className={styles.empty}>
                 Nenhum casal formado
               </div>

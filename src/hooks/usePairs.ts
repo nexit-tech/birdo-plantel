@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { mapPairFromDB } from '@/utils/mappers';
 import { Pair } from '@/types';
 
+export interface PairWithNames extends Pair {
+  maleName?: string;
+  femaleName?: string;
+}
+
 export function usePairs() {
-  const [pairs, setPairs] = useState<Pair[]>([]);
+  const [pairs, setPairs] = useState<PairWithNames[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPairs = useCallback(async () => {
     try {
@@ -14,41 +19,58 @@ export function usePairs() {
         .from('pairs')
         .select(`
           *,
-          cycles:breeding_cycles(*)
+          male:birds!male_id(name),
+          female:birds!female_id(name)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      setPairs((data || []).map(mapPairFromDB));
-    } catch (error) {
-      console.error(error);
+      const formattedPairs = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        maleId: item.male_id,
+        femaleId: item.female_id,
+        startDate: item.start_date,
+        status: item.status,
+        cage: item.cage,
+        cycles: item.cycles || [],
+        maleName: item.male?.name,
+        femaleName: item.female?.name
+      }));
+
+      setPairs(formattedPairs);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao buscar casais');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   const createPair = async (pair: Omit<Pair, 'id' | 'cycles'>) => {
-    const dbPair = {
-      name: pair.name,
-      male_id: pair.maleId,
-      female_id: pair.femaleId,
-      start_date: pair.startDate,
-      status: pair.status,
-      cage: pair.cage
-    };
+    try {
+      const dbPair = {
+        name: pair.name,
+        male_id: pair.maleId,
+        female_id: pair.femaleId,
+        start_date: pair.startDate,
+        status: pair.status,
+        cage: pair.cage
+      };
 
-    const { data, error } = await supabase
-      .from('pairs')
-      .insert([dbPair])
-      .select()
-      .single();
+      const { data, error } = await supabase
+        .from('pairs')
+        .insert([dbPair])
+        .select()
+        .single();
 
-    if (error) throw error;
+      if (error) throw error;
 
-    const newPair = mapPairFromDB(data);
-    setPairs(prev => [newPair, ...prev]);
-    return newPair;
+      await fetchPairs();
+      return data;
+    } catch (err) {
+      throw err;
+    }
   };
 
   useEffect(() => {
@@ -58,7 +80,8 @@ export function usePairs() {
   return {
     pairs,
     isLoading,
-    createPair,
-    refetch: fetchPairs
+    error,
+    refetch: fetchPairs,
+    createPair
   };
 }
