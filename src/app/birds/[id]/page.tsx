@@ -25,8 +25,6 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const { 
     bird, 
     loading, 
-    updateBird,
-    deleteBird,
     updateStatus, 
     addLog, 
     updateLog, 
@@ -36,7 +34,7 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
     updateParent 
   } = useBird(id);
 
-  const { birds: allBirds } = useBirds();
+  const { birds: allBirds, updateBird, deleteBird } = useBirds();
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [activeLogType, setActiveLogType] = useState<LogType>('SAUDE');
@@ -49,7 +47,6 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const [editingWeight, setEditingWeight] = useState<BirdWeight | null>(null);
 
-  // Estados para Edição e Exclusão da Ave
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
@@ -73,14 +70,18 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   };
 
   const handleSaveBird = async (updatedBird: Bird) => {
-    await updateBird(updatedBird);
-    setIsEditModalOpen(false);
+    if (updateBird) {
+      await updateBird(updatedBird);
+      setIsEditModalOpen(false);
+    }
   };
 
   const handleDeleteBird = () => {
     requestConfirm('Excluir Ave?', 'A ave e todo seu histórico serão removidos permanentemente.', async () => {
-      await deleteBird();
-      router.replace('/birds');
+      if (deleteBird) {
+        await deleteBird(bird.id);
+        router.replace('/birds');
+      }
     });
   };
 
@@ -169,7 +170,15 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
       <div className={styles.scrollContent}>
         <div className={styles.hero}>
           <div className={styles.avatarLarge}>
-            {bird.gender === 'MACHO' ? '♂' : bird.gender === 'FEMEA' ? '♀' : '?'}
+            {bird.photoUrl ? (
+              <img 
+                src={bird.photoUrl} 
+                alt={bird.name} 
+                className={styles.avatarImage} 
+              />
+            ) : (
+              bird.gender === 'MACHO' ? '♂' : bird.gender === 'FEMEA' ? '♀' : '?'
+            )}
           </div>
           <h2 className={styles.heroTitle}>{bird.name}</h2>
           <p className={styles.heroSubtitle}>{bird.ringNumber}</p>

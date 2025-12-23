@@ -17,6 +17,7 @@ function PairsListContent() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSavePair = async (pairData: Pair) => {
+    // Remove o ID gerado temporariamente se necessário, pois o hook/backend vai lidar com isso
     const { id, cycles, ...data } = pairData;
     await createPair(data);
     setIsModalOpen(false);
@@ -42,12 +43,13 @@ function PairsListContent() {
         }
       />
 
-      <div className={styles.searchContainer}>
+      <div className={styles.searchWrapper}>
         <div className={styles.searchBar}>
-          <Search size={20} />
+          <Search size={18} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Buscar por nome, anilha..."
+            placeholder="Buscar por nome ou identificação..."
+            className={styles.input}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

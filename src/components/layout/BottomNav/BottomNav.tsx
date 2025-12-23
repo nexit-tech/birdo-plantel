@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Bird, Users, PieChart, Settings } from 'lucide-react';
@@ -8,6 +9,35 @@ import styles from './BottomNav.module.css';
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [isHidden, setIsHidden] = useState(false);
+
+  useEffect(() => {
+    const checkModalOpen = () => {
+      const overlays = document.querySelectorAll('[class*="overlay"]');
+      
+      const hasOpenModal = Array.from(overlays).some((el) => {
+        if (!(el instanceof HTMLElement)) return false;
+        const style = window.getComputedStyle(el);
+        return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+      });
+
+      setIsHidden(hasOpenModal);
+    };
+
+    const observer = new MutationObserver(() => {
+      checkModalOpen();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    });
+    checkModalOpen();
+
+    return () => observer.disconnect();
+  }, []);
 
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
@@ -18,7 +48,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className={styles.nav}>
+    <nav className={clsx(styles.nav, isHidden && styles.hidden)}>
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (

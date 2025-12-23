@@ -29,6 +29,7 @@ export function useBirds() {
 
   const createBird = async (bird: Omit<Bird, 'id' | 'logs' | 'weights'>) => {
     try {
+
       const dbBird = {
         name: bird.name,
         ring_number: bird.ringNumber,
@@ -60,6 +61,55 @@ export function useBirds() {
     }
   };
 
+  const updateBird = async (bird: Bird) => {
+    try {
+      const dbBird = {
+        name: bird.name,
+        ring_number: bird.ringNumber,
+        species: bird.species,
+        mutation: bird.mutation,
+        gender: bird.gender,
+        birth_date: bird.birthDate,
+        status: bird.status,
+        cage: bird.cage,
+        father_id: bird.fatherId,
+        mother_id: bird.motherId,
+        photo_url: bird.photoUrl,
+        notes: bird.notes
+      };
+
+      const { data, error } = await supabase
+        .from('birds')
+        .update(dbBird)
+        .eq('id', bird.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const updated = mapBirdFromDB(data);
+      setBirds(prev => prev.map(b => b.id === bird.id ? updated : b));
+      return updated;
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const deleteBird = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('birds')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setBirds(prev => prev.filter(b => b.id !== id));
+    } catch (err) {
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchBirds();
   }, [fetchBirds]);
@@ -69,6 +119,8 @@ export function useBirds() {
     isLoading,
     error,
     refetch: fetchBirds,
-    createBird
+    createBird,
+    updateBird, 
+    deleteBird  
   };
 }

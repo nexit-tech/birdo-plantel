@@ -1,114 +1,137 @@
 .container {
-  background-color: #FBFBFB;
   min-height: 100vh;
-}
-
-.scrollContent {
-  padding: 20px 16px 40px 16px;
-}
-
-.actions {
+  background-color: #F2F2F7;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  padding-bottom: 80px;
 }
 
-.actionBtn {
+.loading, .error {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  height: 100vh;
+  color: #8E8E93;
+  font-size: 16px;
+}
+
+.scrollContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .hero {
+  background-color: #FFFFFF;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 32px;
+  padding: 24px 20px 32px 20px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  margin-bottom: 24px;
 }
 
 .avatarLarge {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background-color: #FFFFFF;
+  background-color: #F2F2F7;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 40px;
-  color: #8E8E93;
   margin-bottom: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  font-family: var(--font-heading);
+  overflow: hidden;
   border: 4px solid #FFFFFF;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .heroTitle {
   font-size: 24px;
   font-weight: 700;
-  color: var(--foreground);
-  margin-bottom: 2px;
+  color: #000000;
+  margin: 0 0 4px 0;
   text-align: center;
 }
 
 .heroSubtitle {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
   color: #8E8E93;
-  margin-bottom: 6px;
+  margin: 0 0 12px 0;
 }
 
 .heroSpecies {
-  font-size: 14px;
-  color: #6D6D72;
-  background-color: #E5E5EA;
-  padding: 4px 12px;
-  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #007AFF;
+  background-color: rgba(0, 122, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
 }
 
 .sectionHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
   margin-bottom: 8px;
-  padding-right: 4px;
   margin-top: 24px;
 }
 
 .sectionTitle {
-  font-size: 12px;
-  color: #6D6D72;
-  padding-left: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6C6C70;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 600;
+  margin-left: 20px;
   margin-bottom: 8px;
-  margin-top: 24px;
+}
+
+.sectionHeader .sectionTitle {
+  margin: 0;
 }
 
 .addButton {
   font-size: 14px;
-  color: var(--primary);
   font-weight: 600;
+  color: #007AFF;
+  background: none;
+  border: none;
   cursor: pointer;
+  padding: 4px 8px;
 }
 
 .group {
   background-color: #FFFFFF;
   border-radius: 12px;
+  margin: 0 16px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0,0,0,0.02);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Clickable Status Row */
+.genealogyGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 0 16px;
+}
+
 .clickableRow {
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
 .clickableRow:active {
-  background-color: #F2F2F7;
+  background-color: #F9F9F9;
 }
 
 .statusValueWrapper {
@@ -119,25 +142,30 @@
 
 .statusBadge {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
   padding: 4px 10px;
   border-radius: 12px;
+  color: #FFFFFF;
+  text-transform: capitalize;
 }
 
-.disponivel { background-color: rgba(52, 199, 89, 0.1); color: var(--success); }
-.reproducao { background-color: rgba(37, 145, 255, 0.1); color: var(--primary); }
-.vendido { background-color: rgba(142, 142, 147, 0.1); color: #8E8E93; }
-.obito { background-color: rgba(255, 59, 48, 0.1); color: var(--danger); }
-
-.genealogyGrid {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 8px;
-}
+.statusBadge.disponivel { background-color: #34C759; }
+.statusBadge.vendido { background-color: #8E8E93; }
+.statusBadge.reproducao { background-color: #007AFF; }
+.statusBadge.obito { background-color: #FF3B30; }
 
 .emptyState {
-  padding: 20px;
+  margin: 0;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: #C7C7CC;
   font-size: 14px;
+  background-color: #FFFFFF;
+  border: 1px dashed #E5E5EA;
+  border-radius: 12px;
+  flex: 1;
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Search, FileText, Download } from 'lucide-react';
 import { Bird } from '@/types';
 import { generatePedigreePDF } from '@/utils/pdfGenerator';
@@ -20,8 +21,20 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBird, setSelectedBird] = useState<Bird | null>(null);
   const [bgColor, setBgColor] = useState('#FFFFFF');
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+    // Bloqueia o scroll do corpo da página quando o modal abre
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
 
   const filtered = birds.filter(b => 
     b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -30,85 +43,95 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
 
   const handleDownload = () => {
     if (selectedBird && profile) {
-      // Passamos 'birds' (lista completa) como 4º argumento
       generatePedigreePDF(selectedBird, profile, bgColor, birds);
     }
   };
 
-  return (
+  // O createPortal renderiza o modal diretamente no document.body
+  return createPortal(
     <div className={styles.overlay}>
-      <div className={styles.sheet}>
+      <div className={styles.modal}>
         <div className={styles.header}>
-          <h3 className={styles.title}>Gerar Documento SISPASS</h3>
-          <button onClick={onClose} className={styles.closeBtn}><X size={24} /></button>
+          <h3 className={styles.title}>
+            {selectedBird ? 'Configurar Ficha' : 'Gerar Documento SISPASS'}
+          </h3>
+          <button onClick={onClose} className={styles.closeBtn}>
+            <X size={24} />
+          </button>
         </div>
 
-        {!selectedBird ? (
-          <>
-            <div className={styles.searchBox}>
-              <Search size={18} className={styles.searchIcon} />
-              <input 
-                className={styles.input}
-                placeholder="Buscar ave..."
-                value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                autoFocus
-              />
-            </div>
-
-            <div className={styles.list}>
-              {filtered.map(bird => (
-                <button 
-                  key={bird.id} 
-                  className={styles.item}
-                  onClick={() => setSelectedBird(bird)}
-                >
-                  <div className={styles.iconWrapper}><FileText size={20} /></div>
-                  <div className={styles.info}>
-                    <span className={styles.name}>{bird.name}</span>
-                    <span className={styles.ring}>{bird.ringNumber}</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </>
-        ) : (
-          <div className={styles.previewContainer}>
-            <div className={styles.previewHeader}>
-              <div 
-                className={styles.fileIconBig}
-                style={{ backgroundColor: bgColor }}
-              >
-                <FileText size={40} color="#1C1C1E" />
+        <div className={styles.body}>
+          {!selectedBird ? (
+            <>
+              <div className={styles.searchContainer}>
+                <Search size={18} className={styles.searchIcon} />
+                <input 
+                  className={styles.input}
+                  placeholder="Buscar ave..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  autoFocus
+                />
               </div>
-              <h4 className={styles.previewTitle}>{selectedBird.name}</h4>
-              <p className={styles.previewSub}>
-                Anilha: {selectedBird.ringNumber}
-              </p>
-            </div>
 
-            <div className={styles.optionsSection}>
+              <div className={styles.list}>
+                {filtered.length > 0 ? (
+                  filtered.map(bird => (
+                    <button 
+                      key={bird.id} 
+                      className={styles.birdItem}
+                      onClick={() => setSelectedBird(bird)}
+                    >
+                      <div className={styles.birdInfo}>
+                        <h4>{bird.name}</h4>
+                        <span>{bird.ringNumber}</span>
+                      </div>
+                      <FileText size={20} color="#64748b" />
+                    </button>
+                  ))
+                ) : (
+                  <div className={styles.empty}>
+                    Nenhuma ave encontrada com esse termo.
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className={styles.previewContent}>
+              <div className={styles.previewCard} style={{ backgroundColor: bgColor }}>
+                 <div className={styles.previewIcon}>
+                    <FileText size={24} color="#000" />
+                 </div>
+                 <div className={styles.previewInfo}>
+                    <h4 style={{ color: '#000' }}>{selectedBird.name}</h4>
+                    <p style={{ color: '#4b5563' }}>Anilha: {selectedBird.ringNumber}</p>
+                 </div>
+              </div>
+
               <ColorPicker 
-                label="Cor do Fundo da Ficha"
+                label="Cor de Fundo da Ficha"
                 value={bgColor}
                 onChange={setBgColor}
               />
+
+              <div className={styles.actions}>
+                <button onClick={handleDownload} className={styles.downloadBtn}>
+                  <Download size={20} />
+                  Baixar Ficha PDF
+                </button>
+
+                <button 
+                  className={styles.backBtn}
+                  onClick={() => setSelectedBird(null)}
+                >
+                  Selecionar Outra Ave
+                </button>
+              </div>
             </div>
-
-            <button onClick={handleDownload} className={styles.downloadBtn}>
-              <Download size={20} />
-              Baixar Ficha PDF
-            </button>
-
-            <button 
-              className={styles.backBtn}
-              onClick={() => setSelectedBird(null)}
-            >
-              Selecionar Outra Ave
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

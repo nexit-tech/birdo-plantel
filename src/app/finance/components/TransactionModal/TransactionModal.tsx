@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { Transaction, TransactionType } from '@/types';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
 import { Combobox } from '@/components/ui/Combobox/Combobox';
@@ -35,7 +35,12 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
       });
     } else {
       setType('RECEITA');
-      setFormData({ amount: '', category: '', date: new Date().toISOString().split('T')[0], description: '' });
+      setFormData({ 
+        amount: '', 
+        category: '', 
+        date: new Date().toISOString().split('T')[0], 
+        description: '' 
+      });
     }
   }, [initialData, isOpen]);
 
@@ -44,14 +49,13 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      id: initialData?.id || Math.random().toString(), // ID temporário, será tratado no page.tsx
+      id: initialData?.id || Math.random().toString(),
       type,
       amount: Number(formData.amount.replace(',', '.')),
       category: formData.category,
       date: formData.date,
       description: formData.description
     });
-    // Não fechamos aqui, o pai fecha após o save async
   };
 
   const incomeCategories = [
@@ -70,25 +74,31 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.sheet}>
+      <div className={styles.modal}>
         <div className={styles.header}>
-          <h3 className={styles.title}>{initialData ? 'Editar Transação' : 'Nova Transação'}</h3>
-          <button onClick={onClose} className={styles.closeBtn}><X size={24} /></button>
+          <h3 className={styles.title}>
+            {initialData ? 'Editar Transação' : 'Nova Transação'}
+          </h3>
+          <button onClick={onClose} className={styles.closeBtn}>
+            <X size={24} />
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.switchContainer}>
+          <div className={styles.typeSelector}>
             <button
               type="button"
-              className={clsx(styles.switchBtn, type === 'RECEITA' && styles.activeIncome)}
+              className={clsx(styles.typeBtn, type === 'RECEITA' && styles.active)}
               onClick={() => setType('RECEITA')}
+              style={type === 'RECEITA' ? { color: '#10b981' } : {}}
             >
               Receita
             </button>
             <button
               type="button"
-              className={clsx(styles.switchBtn, type === 'DESPESA' && styles.activeExpense)}
+              className={clsx(styles.typeBtn, type === 'DESPESA' && styles.active)}
               onClick={() => setType('DESPESA')}
+              style={type === 'DESPESA' ? { color: '#ef4444' } : {}}
             >
               Despesa
             </button>
@@ -100,29 +110,28 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
               type="number"
               step="0.01"
               required
-              className={styles.inputMoney}
+              className={styles.input}
               placeholder="0,00"
               value={formData.amount}
               onChange={e => setFormData({...formData, amount: e.target.value})}
             />
           </div>
 
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <Combobox 
-                label="Categoria"
-                value={formData.category}
-                options={type === 'RECEITA' ? incomeCategories : expenseCategories}
-                onChange={val => setFormData({...formData, category: val})}
-              />
-            </div>
-             <div className={styles.field}>
-              <DatePicker 
-                label="Data"
-                value={formData.date}
-                onChange={d => setFormData({...formData, date: d})}
-              />
-            </div>
+          <div className={styles.field}>
+            <Combobox 
+              label="Categoria"
+              value={formData.category}
+              options={type === 'RECEITA' ? incomeCategories : expenseCategories}
+              onChange={val => setFormData({...formData, category: val})}
+            />
+          </div>
+          
+          <div className={styles.field}>
+            <DatePicker 
+              label="Data"
+              value={formData.date}
+              onChange={d => setFormData({...formData, date: d})}
+            />
           </div>
 
           <div className={styles.field}>
@@ -135,8 +144,9 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
             />
           </div>
 
-          <button type="submit" className={clsx(styles.submitBtn, type === 'RECEITA' ? styles.btnIncome : styles.btnExpense)}>
-            Salvar
+          <button type="submit" className={styles.submitBtn}>
+            <Check size={20} />
+            {initialData ? 'Salvar Alterações' : 'Registrar'}
           </button>
         </form>
       </div>

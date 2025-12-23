@@ -47,12 +47,22 @@ export default function Settings() {
 
       <div className={styles.profileSection} onClick={() => setIsEditModalOpen(true)}>
         <div className={styles.avatarLarge}>
-          {displayProfile.name?.charAt(0).toUpperCase() || 'U'}
+          {displayProfile.photoUrl ? (
+            <img 
+              src={displayProfile.photoUrl} 
+              alt={displayProfile.name} 
+              className={styles.avatarImage} 
+            />
+          ) : (
+            displayProfile.name?.charAt(0).toUpperCase() || 'U'
+          )}
         </div>
         <div className={styles.profileInfo}>
           <h2 className={styles.profileName}>{displayProfile.name}</h2>
           <span className={styles.profileSub}>{displayProfile.email}</span>
-          <span className={styles.profileRegistry}>{displayProfile.registryNumber}</span>
+          {displayProfile.registryNumber && (
+            <span className={styles.profileRegistry}>{displayProfile.registryNumber}</span>
+          )}
         </div>
         <button className={styles.editBtn}>Editar</button>
       </div>
@@ -107,7 +117,7 @@ export default function Settings() {
       <EditProfileModal 
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        breeder={displayProfile}
+        initialData={profile}
         onSave={handleUpdateBreeder}
       />
 
