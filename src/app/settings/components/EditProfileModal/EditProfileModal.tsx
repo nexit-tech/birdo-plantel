@@ -38,7 +38,6 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
     if (!file) return;
 
     setUploading(true);
-    // Upload para a pasta 'profile'
     const url = await uploadImage(file, 'profile');
     
     if (url) {
@@ -64,7 +63,6 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
-          {/* Seção de Upload de Logo */}
           <div className={styles.imageUploadSection}>
             <div className={styles.imageWrapper}>
               {formData.photoUrl ? (

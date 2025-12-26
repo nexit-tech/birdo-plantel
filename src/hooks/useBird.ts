@@ -87,7 +87,10 @@ export function useBird(id: string) {
   const addLog = async (log: Omit<BirdLog, 'id'>) => {
     const { data, error } = await supabase
       .from('bird_logs')
-      .insert([{ ...log, bird_id: id }])
+      .insert([{ 
+        ...log, 
+        bird_id: id 
+      }])
       .select()
       .single();
     
@@ -117,7 +120,9 @@ export function useBird(id: string) {
 
   const saveWeight = async (weight: Omit<BirdWeight, 'id'> | BirdWeight) => {
     const isEdit = 'id' in weight;
-    const payload = isEdit ? weight : { ...weight, bird_id: id };
+    const payload = isEdit 
+      ? weight 
+      : { ...weight, bird_id: id };
     
     const query = supabase.from('bird_weights');
     const { data, error } = await (isEdit 

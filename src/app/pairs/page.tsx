@@ -4,7 +4,8 @@ import { useState, Suspense } from 'react';
 import { Header } from '@/components/layout/Header/Header';
 import { PairCard } from './components/PairCard/PairCard';
 import { NewPairModal } from './components/NewPairModal/NewPairModal';
-import { usePairs, useBirds } from '@/hooks';
+import { usePairs } from '@/hooks/usePairs';
+import { useBirds } from '@/hooks/useBirds';
 import { Plus, Search } from 'lucide-react';
 import { Pair } from '@/types';
 import styles from './page.module.css';
@@ -17,7 +18,6 @@ function PairsListContent() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSavePair = async (pairData: Pair) => {
-    // Remove o ID gerado temporariamente se necessário, pois o hook/backend vai lidar com isso
     const { id, cycles, ...data } = pairData;
     await createPair(data);
     setIsModalOpen(false);

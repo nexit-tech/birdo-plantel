@@ -32,23 +32,30 @@ export function useProfile() {
   }, []);
 
   const updateProfile = async (updatedData: Breeder) => {
-    const dbProfile = {
-      name: updatedData.name,
-      email: updatedData.email,
-      registry_number: updatedData.registryNumber,
-      phone: updatedData.phone,
-      city: updatedData.city,
-      photo_url: updatedData.photoUrl
-    };
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
 
-    const { error } = await supabase
-      .from('profiles')
-      .update(dbProfile)
-      .eq('id', profile?.id);
+      const dbProfile = {
+        name: updatedData.name,
+        email: updatedData.email,
+        registry_number: updatedData.registryNumber,
+        phone: updatedData.phone,
+        city: updatedData.city,
+        photo_url: updatedData.photoUrl
+      };
 
-    if (error) throw error;
+      const { error } = await supabase
+        .from('profiles')
+        .update(dbProfile)
+        .eq('id', user.id);
 
-    setProfile(updatedData);
+      if (error) throw error;
+
+      setProfile(updatedData);
+    } catch (err) {
+      throw err;
+    }
   };
 
   useEffect(() => {
