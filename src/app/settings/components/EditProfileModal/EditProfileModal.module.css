@@ -2,116 +2,110 @@
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(2px);
   z-index: 50;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  padding: 1rem;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.2s;
+}
+
+@media (min-width: 640px) {
+  .overlay {
+    align-items: center;
+  }
 }
 
 .modal {
-  background-color: var(--background, #ffffff);
+  background: white;
   width: 100%;
   max-width: 500px;
+  border-radius: 20px 20px 0 0;
+  padding: 1.5rem;
   max-height: 90vh;
-  border-radius: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--border, #e5e7eb);
+  overflow-y: auto;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 640px) {
+  .modal {
+    border-radius: 16px;
+    animation: zoomIn 0.2s;
+  }
 }
 
 .header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 1.5rem 1rem;
-  flex-shrink: 0;
+  align-items: center;
+  margin-bottom: 2rem;
 }
 
 .title {
+  font-family: var(--font-heading);
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--foreground, #0f172a);
   margin: 0;
 }
 
 .closeBtn {
+  background: #f2f2f7;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
+  color: #8e8e93;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  color: var(--muted-foreground, #64748b);
-  transition: all 0.2s;
 }
 
-.closeBtn:hover {
-  background-color: var(--muted, #f1f5f9);
-  color: var(--foreground, #0f172a);
-}
-
-.form {
-  padding: 0 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  overflow-y: auto;
-}
-
-/* --- Estilos de Upload de Imagem (Perfil) --- */
 .imageUploadSection {
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  margin-bottom: 2rem;
 }
 
 .imageWrapper {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-.placeholder {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background-color: var(--muted, #f1f5f9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed var(--border, #cbd5e1);
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--muted-foreground, #94a3b8);
-}
-
-.placeholder:hover {
-  background-color: var(--muted, #e2e8f0);
-  border-color: var(--muted-foreground, #94a3b8);
-  color: var(--foreground, #64748b);
+  width: 100px;
+  height: 100px;
 }
 
 .imagePreview {
-  width: 110px;
-  height: 110px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--background, #fff);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 4px solid #f2f2f7;
 }
 
-.cameraIcon {
-  opacity: 0.7;
+.placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #f2f2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93;
+}
+
+.uploadingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: #007aff;
 }
 
 .fileInput {
@@ -119,43 +113,21 @@
 }
 
 .uploadLabel {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--primary, #000000);
-  cursor: pointer;
-  padding: 6px 12px;
-  border-radius: 20px;
-  background-color: var(--muted, #f1f5f9);
-  transition: all 0.2s;
-}
-
-.uploadLabel:hover {
-  background-color: var(--border, #e2e8f0);
-}
-
-.uploadingOverlay {
   position: absolute;
-  top: 0;
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(2px);
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #007aff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.form {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-.spinner {
-  animation: spin 1s linear infinite;
-  color: var(--primary, #000);
-}
-
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .field {
@@ -165,56 +137,58 @@
 }
 
 .label {
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: var(--foreground, #0f172a);
-  margin-left: 2px;
+  color: #636366;
 }
 
 .input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--border, #e2e8f0);
-  background-color: var(--background, #ffffff);
-  color: var(--foreground, #0f172a);
-  font-size: 0.95rem;
+  padding: 0.875rem;
+  border: 1px solid #e5e5ea;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #f9f9f9;
+  outline: none;
   transition: all 0.2s;
 }
 
 .input:focus {
-  outline: none;
-  border-color: var(--primary, #000000);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .submitBtn {
-  margin-top: 0.5rem;
-  width: 100%;
+  background-color: #007aff;
+  color: white;
+  border: none;
   padding: 1rem;
   border-radius: 12px;
-  border: none;
-  background-color: var(--primary, #000000);
-  color: var(--primary-foreground, #ffffff);
   font-size: 1rem;
   font-weight: 600;
+  margin-top: 1rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: background-color 0.2s;
 }
 
-.submitBtn:hover {
-  opacity: 0.9;
+.submitBtn:active {
+  background-color: #0062cc;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 @keyframes fadeIn {
@@ -222,7 +196,7 @@
   to { opacity: 1; }
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }

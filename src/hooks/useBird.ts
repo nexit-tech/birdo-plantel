@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { mapBirdFromDB, mapLogFromDB, mapWeightFromDB } from '@/utils/mappers';
 import { Bird, BirdLog, BirdWeight, BirdStatus } from '@/types';
 
 export function useBird(id: string) {
   const [bird, setBird] = useState<Bird | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   const fetchBird = useCallback(async () => {
     try {

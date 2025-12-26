@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { mapBirdFromDB } from '@/utils/mappers';
 import { Bird } from '@/types';
 
@@ -7,6 +7,7 @@ export function useBirds() {
   const [birds, setBirds] = useState<Bird[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
 
   const fetchBirds = useCallback(async () => {
     try {
@@ -29,8 +30,11 @@ export function useBirds() {
 
   const createBird = async (bird: Omit<Bird, 'id' | 'logs' | 'weights'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
 
       const dbBird = {
+        user_id: user.id,
         name: bird.name,
         ring_number: bird.ringNumber,
         species: bird.species,

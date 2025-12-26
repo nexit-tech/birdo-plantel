@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { mapTransactionFromDB } from '@/utils/mappers';
 import { Transaction } from '@/types';
 
 export function useFinance() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -25,7 +26,11 @@ export function useFinance() {
   }, []);
 
   const addTransaction = async (transaction: Omit<Transaction, 'id'>) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
     const dbTransaction = {
+      user_id: user.id,
       type: transaction.type,
       amount: transaction.amount,
       category: transaction.category,

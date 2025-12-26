@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { mapPairFromDB, mapCycleFromDB } from '@/utils/mappers';
 import { Pair, BreedingCycle, PairStatus } from '@/types';
 
 export function usePair(id: string) {
   const [pair, setPair] = useState<Pair | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   const fetchPair = useCallback(async () => {
     try {

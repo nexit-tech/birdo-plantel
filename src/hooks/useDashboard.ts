@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 export function useDashboard() {
   const [stats, setStats] = useState({
@@ -9,6 +9,7 @@ export function useDashboard() {
     availableForSale: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
   const fetchStats = useCallback(async () => {
     try {

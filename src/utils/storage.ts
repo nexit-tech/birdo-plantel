@@ -1,6 +1,7 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 export async function uploadImage(file: File, folder: 'birds' | 'profile'): Promise<string | null> {
+  const supabase = createClient();
   try {
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
@@ -11,7 +12,6 @@ export async function uploadImage(file: File, folder: 'birds' | 'profile'): Prom
       .upload(filePath, file);
 
     if (uploadError) {
-      console.error('Erro no upload:', uploadError);
       return null;
     }
 
@@ -21,7 +21,6 @@ export async function uploadImage(file: File, folder: 'birds' | 'profile'): Prom
 
     return data.publicUrl;
   } catch (error) {
-    console.error('Erro ao processar imagem:', error);
     return null;
   }
 }

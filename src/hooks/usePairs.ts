@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { Pair } from '@/types';
 
 export interface PairWithNames extends Pair {
@@ -11,6 +11,7 @@ export function usePairs() {
   const [pairs, setPairs] = useState<PairWithNames[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const supabase = createClient();
 
   const fetchPairs = useCallback(async () => {
     try {
@@ -49,7 +50,11 @@ export function usePairs() {
 
   const createPair = async (pair: Omit<Pair, 'id' | 'cycles'>) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
       const dbPair = {
+        user_id: user.id,
         name: pair.name,
         male_id: pair.maleId,
         female_id: pair.femaleId,

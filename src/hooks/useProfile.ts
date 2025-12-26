@@ -1,19 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import { mapProfileFromDB } from '@/utils/mappers';
 import { Breeder } from '@/types';
 
 export function useProfile() {
   const [profile, setProfile] = useState<Breeder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
 
   const fetchProfile = useCallback(async () => {
     try {
       setIsLoading(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('email', 'admin@birdoplantel.com')
+        .eq('id', user.id)
         .single();
 
       if (error) throw error;
