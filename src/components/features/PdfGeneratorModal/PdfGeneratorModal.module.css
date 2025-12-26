@@ -1,78 +1,3 @@
-.overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.modal {
-  background-color: var(--background, #ffffff);
-  width: 100%;
-  max-width: 500px;
-  /* Altura automática baseada no conteúdo, mas com limite para não estourar a tela */
-  height: auto;
-  max-height: 85vh;
-  border-radius: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--border, #e5e7eb);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem 1.5rem 1rem;
-  flex-shrink: 0;
-  border-bottom: 1px solid transparent; /* Reserva espaço */
-}
-
-.title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--foreground, #0f172a);
-  margin: 0;
-}
-
-.closeBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  color: var(--muted-foreground, #64748b);
-  transition: all 0.2s;
-}
-
-.closeBtn:hover {
-  background-color: var(--muted, #f1f5f9);
-  color: var(--foreground, #0f172a);
-}
-
-/* Container principal de conteúdo que vai rolar se necessário */
-.body {
-  padding: 0 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  overflow-y: auto;
-  /* Garante que o scroll aconteça aqui e não na página */
-  overscroll-behavior: contain; 
-}
-
-/* Área de busca */
 .searchContainer {
   position: relative;
   width: 100%;
@@ -83,32 +8,33 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--muted-foreground, #94a3b8);
+  color: #94a3b8;
   pointer-events: none;
 }
 
 .input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem; /* Espaço para o ícone */
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
   border-radius: 12px;
-  border: 1px solid var(--border, #e2e8f0);
-  background-color: var(--background, #ffffff);
-  color: var(--foreground, #0f172a);
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #0f172a;
   font-size: 0.95rem;
   transition: all 0.2s;
+  touch-action: manipulation;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--primary, #000000);
+  border-color: #000000;
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
 }
 
-/* Lista de Aves */
 .list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .birdItem {
@@ -117,33 +43,33 @@
   justify-content: space-between;
   padding: 0.75rem 1rem;
   border-radius: 12px;
-  border: 1px solid var(--border, #e2e8f0);
-  background-color: var(--background, #ffffff);
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
+  touch-action: manipulation;
 }
 
 .birdItem:hover {
-  border-color: var(--primary, #000000);
-  background-color: var(--muted, #f8fafc);
+  border-color: #000000;
+  background-color: #f8fafc;
 }
 
 .birdInfo h4 {
   margin: 0;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--foreground, #0f172a);
+  color: #0f172a;
 }
 
 .birdInfo span {
   font-size: 0.8rem;
-  color: var(--muted-foreground, #64748b);
+  color: #64748b;
   display: block;
   margin-top: 2px;
 }
 
-/* Estado de Preview */
 .previewContent {
   display: flex;
   flex-direction: column;
@@ -151,13 +77,13 @@
 }
 
 .previewCard {
-  background-color: var(--muted, #f8fafc);
+  background-color: #f8fafc;
   border-radius: 16px;
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  border: 1px solid var(--border, #e2e8f0);
+  border: 1px solid #e2e8f0;
 }
 
 .previewIcon {
@@ -175,13 +101,13 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--foreground);
+  color: #0f172a;
 }
 
 .previewInfo p {
   margin: 4px 0 0;
   font-size: 0.875rem;
-  color: var(--muted-foreground);
+  color: #64748b;
 }
 
 .actions {
@@ -196,8 +122,8 @@
   padding: 1rem;
   border-radius: 12px;
   border: none;
-  background-color: var(--primary, #000000);
-  color: var(--primary-foreground, #ffffff);
+  background-color: #000000;
+  color: #ffffff;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -206,6 +132,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  touch-action: manipulation;
 }
 
 .downloadBtn:hover {
@@ -218,40 +145,25 @@
   border-radius: 12px;
   border: none;
   background-color: transparent;
-  color: var(--muted-foreground, #64748b);
+  color: #64748b;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s;
+  touch-action: manipulation;
 }
 
 .backBtn:hover {
-  color: var(--foreground, #0f172a);
-  background-color: var(--muted, #f1f5f9);
+  color: #0f172a;
+  background-color: #f1f5f9;
 }
 
 .empty {
   text-align: center;
   padding: 2rem 1rem;
-  color: var(--muted-foreground, #64748b);
+  color: #64748b;
   font-size: 0.9rem;
-  background-color: var(--muted, #f8fafc);
+  background-color: #f8fafc;
   border-radius: 12px;
-  border: 1px dashed var(--border, #e2e8f0);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  border: 1px dashed #e2e8f0;
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks';
 import { Breeder } from '@/types';
+import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import styles from './EditProfileModal.module.css';
 
 interface EditProfileModalProps {
@@ -42,100 +43,94 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
   };
 
   return (
-    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={styles.modal}>
-        <header className={styles.header}>
-          <button type="button" onClick={onClose} className={styles.cancelBtn}>
-            Cancelar
-          </button>
-          <span className={styles.title}>Editar Perfil</span>
+    <SheetModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Editar Perfil"
+    >
+      <div className={styles.content}>
+        <div className={styles.avatarSection}>
+          <div className={styles.avatar}>
+             {formData.photoUrl ? (
+               <img src={formData.photoUrl} alt="Avatar" />
+             ) : (
+               <span>{formData.name.charAt(0).toUpperCase()}</span>
+             )}
+          </div>
+          <button className={styles.editPhotoBtn}>Alterar Foto</button>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className={styles.formGroup}>
+            <div className={styles.inputRow}>
+              <label className={styles.label}>Nome do Criatório / Criador</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                placeholder="Seu nome"
+              />
+            </div>
+            
+            <div className={styles.inputRow}>
+              <label className={styles.label}>Cidade</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={formData.city}
+                onChange={(e) => handleChange('city', e.target.value)}
+                placeholder="Sua cidade"
+              />
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <div className={styles.inputRow}>
+              <label className={styles.label}>Registro (CTF/IBAMA)</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={formData.registryNumber}
+                onChange={(e) => handleChange('registryNumber', e.target.value)}
+                placeholder="000000"
+              />
+            </div>
+
+            <div className={styles.inputRow}>
+              <label className={styles.label}>Telefone</label>
+              <input
+                type="tel"
+                className={styles.input}
+                value={formData.phone}
+                onChange={(e) => handleChange('phone', e.target.value)}
+                placeholder="(00) 00000-0000"
+              />
+            </div>
+
+            <div className={styles.inputRow}>
+              <label className={styles.label}>E-mail</label>
+              <input
+                type="email"
+                className={styles.input}
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                placeholder="seu@email.com"
+                readOnly 
+                style={{ opacity: 0.6 }}
+              />
+            </div>
+          </div>
+
           <button 
-            onClick={handleSubmit} 
+            type="submit"
             disabled={isSaving || isLoading} 
             className={styles.saveBtn}
           >
-            {isSaving ? 'Salvando...' : 'Salvar'}
+            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
           </button>
-        </header>
-
-
-        <div className={styles.content}>
-          <div className={styles.avatarSection}>
-            <div className={styles.avatar}>
-               {formData.photoUrl ? (
-                 <img src={formData.photoUrl} alt="Avatar" style={{width: '100%', height: '100%', borderRadius: '50%'}} />
-               ) : (
-                 <span>{formData.name.charAt(0).toUpperCase()}</span>
-               )}
-            </div>
-            <button className={styles.editPhotoBtn}>Alterar Foto</button>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formGroup}>
-              <div className={styles.inputRow}>
-                <label className={styles.label}>Nome do Criatório / Criador</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  placeholder="Seu nome"
-                />
-              </div>
-              
-              <div className={styles.inputRow}>
-                <label className={styles.label}>Cidade</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.city}
-                  onChange={(e) => handleChange('city', e.target.value)}
-                  placeholder="Sua cidade"
-                />
-              </div>
-            </div>
-
-            <div className={styles.formGroup}>
-              <div className={styles.inputRow}>
-                <label className={styles.label}>Registro (CTF/IBAMA)</label>
-                <input
-                  type="text"
-                  className={styles.input}
-                  value={formData.registryNumber}
-                  onChange={(e) => handleChange('registryNumber', e.target.value)}
-                  placeholder="000000"
-                />
-              </div>
-
-              <div className={styles.inputRow}>
-                <label className={styles.label}>Telefone</label>
-                <input
-                  type="tel"
-                  className={styles.input}
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  placeholder="(00) 00000-0000"
-                />
-              </div>
-
-              <div className={styles.inputRow}>
-                <label className={styles.label}>E-mail</label>
-                <input
-                  type="email"
-                  className={styles.input}
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  placeholder="seu@email.com"
-                  readOnly 
-                  style={{ opacity: 0.6 }}
-                />
-              </div>
-            </div>
-
-          </form>
-        </div>
+        </form>
       </div>
-    </div>
+    </SheetModal>
   );
 }

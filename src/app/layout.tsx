@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/BottomNav/BottomNav";
+import { UIProvider } from "@/contexts/UIContext";
 
 const inter = Inter({ 
   subsets: ["latin"], 
@@ -28,8 +29,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={`${inter.variable} ${lexend.variable}`}>
-        {children}
-        <BottomNav />
+        <UIProvider>
+          {children}
+          <BottomNav />
+        </UIProvider>
       </body>
     </html>
   );

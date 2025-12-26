@@ -1,88 +1,14 @@
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.sheet {
-  background-color: #ffffff;
-  width: 100%;
-  max-width: 600px;
-  max-height: 92vh;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #f0f0f0;
-  background: white;
-  flex-shrink: 0;
-}
-
-.title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1c1c1e;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 16px;
-}
-
-.closeBtn {
-  background: #f2f2f7;
-  border: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #8e8e93;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.closeBtn:hover {
-  background: #e5e5ea;
-  color: #000;
-}
-
-.form {
-  padding: 24px;
-  overflow-y: auto;
+/* O container do formulário que vai dentro do SheetModal */
+.formContainer {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  /* Garante que o conteúdo ocupe a largura total */
+  width: 100%; 
 }
 
-.form::-webkit-scrollbar {
-  display: none;
-}
+/* --- Estilos Específicos do Conteúdo (Inputs, Upload, etc) --- */
 
-/* Estilos de Upload de Imagem */
 .imageUploadSection {
   display: flex;
   justify-content: center;
@@ -110,11 +36,6 @@
   transition: all 0.2s;
 }
 
-.placeholder:hover {
-  background-color: #e5e5ea;
-  border-color: #8e8e93;
-}
-
 .imagePreview {
   width: 100px;
   height: 100px;
@@ -134,7 +55,7 @@
 .uploadLabel {
   font-size: 14px;
   font-weight: 500;
-  color: var(--primary, #007aff);
+  color: #007aff;
   cursor: pointer;
 }
 
@@ -154,15 +75,7 @@
 
 .spinner {
   animation: spin 1s linear infinite;
-  color: var(--primary, #000);
-}
-
-/* Fim Estilos Upload */
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  color: #000;
 }
 
 .field {
@@ -189,22 +102,13 @@
   outline: none;
   transition: all 0.2s;
   -webkit-appearance: none;
+  touch-action: manipulation;
 }
 
 .input:focus, .select:focus, .textarea:focus {
-  border-color: var(--primary);
+  border-color: #007aff;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
-}
-
-.input::placeholder, .textarea::placeholder {
-  color: #c7c7cc;
-}
-
-.textarea {
-  resize: vertical; 
-  min-height: 100px;
-  line-height: 1.5;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
 .row {
@@ -218,7 +122,7 @@
 
 .submitBtn {
   margin-top: 8px;
-  background-color: var(--primary);
+  background-color: #007aff;
   color: white;
   border: none;
   padding: 16px;
@@ -228,24 +132,19 @@
   cursor: pointer;
   flex-shrink: 0;
   transition: opacity 0.2s;
+  width: 100%;
+  touch-action: manipulation;
 }
 
 .submitBtn:active {
   opacity: 0.9;
 }
 
-@media (min-width: 768px) {
-  .overlay {
-    align-items: center;
-    padding: 20px;
-  }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-  .sheet {
-    border-radius: 24px;
-    max-height: 85vh;
+@media (max-width: 640px) {
+  .row {
+    flex-direction: column;
+    gap: 12px;
   }
 }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

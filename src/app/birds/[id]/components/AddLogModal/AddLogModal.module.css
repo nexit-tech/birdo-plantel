@@ -1,50 +1,8 @@
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  animation: fadeIn 0.2s ease-out;
-}
-
-.sheet {
-  background-color: #FFFFFF;
-  width: 100%;
-  max-width: 500px;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 -4px 24px rgba(0,0,0,0.1);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.title {
-  font-family: var(--font-heading);
-  font-size: 20px;
-  color: var(--foreground);
-}
-
-.closeBtn {
-  color: #8E8E93;
-  padding: 4px;
-}
-
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  width: 100%;
 }
 
 .field {
@@ -56,47 +14,50 @@
 .label {
   font-size: 14px;
   font-weight: 600;
-  color: var(--foreground);
+  color: #666;
+  margin-left: 4px;
 }
 
 .input, .textarea {
   width: 100%;
-  padding: 12px;
+  padding: 16px;
   border-radius: 12px;
-  border: 1px solid #E5E5EA;
-  background-color: #F9F9F9;
-  font-family: inherit;
+  border: 1px solid #e5e5ea;
   font-size: 16px;
-  color: var(--foreground);
+  background: #f9f9f9;
+  color: #1c1c1e;
   outline: none;
+  transition: all 0.2s;
+  -webkit-appearance: none;
+  touch-action: manipulation;
 }
 
 .input:focus, .textarea:focus {
-  border-color: var(--primary);
-  background-color: #FFFFFF;
+  border-color: #007aff;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
 .textarea {
-  min-height: 100px;
-  resize: none;
+  min-height: 120px;
+  resize: vertical;
 }
 
 .submitBtn {
-  margin-top: 12px;
-  background-color: var(--primary);
-  color: #FFFFFF;
-  height: 50px;
-  border-radius: 14px;
-  font-weight: 600;
+  margin-top: 8px;
+  background-color: #007aff;
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
   font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s;
+  touch-action: manipulation;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+.submitBtn:active {
+  opacity: 0.9;
 }

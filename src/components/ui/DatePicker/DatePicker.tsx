@@ -19,21 +19,21 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
   const [isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('CALENDAR');
   
-  // Inicializa com a data atual se o value for inválido/vazio
+  const cleanValue = value ? value.split('T')[0] : '';
+
   const today = new Date();
   const [displayYear, setDisplayYear] = useState(today.getFullYear());
   const [displayMonth, setDisplayMonth] = useState(today.getMonth());
 
   useEffect(() => {
-    if (value) {
-      // Garante o parse correto 'YYYY-MM-DD' para evitar problemas de fuso horário
-      const [y, m, d] = value.split('-').map(Number);
+    if (cleanValue) {
+      const [y, m, d] = cleanValue.split('-').map(Number);
       if (y && m && d) {
         setDisplayYear(y);
-        setDisplayMonth(m - 1); // Mês em JS é 0-11
+        setDisplayMonth(m - 1);
       }
     }
-  }, [value, isOpen]);
+  }, [cleanValue, isOpen]);
 
   const handleDaySelect = (day: number) => {
     const formattedMonth = String(displayMonth + 1).padStart(2, '0');
@@ -79,7 +79,7 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
 
     for (let i = 1; i <= daysInMonth; i++) {
       const currentDateStr = `${displayYear}-${String(displayMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-      const isSelected = value === currentDateStr;
+      const isSelected = cleanValue === currentDateStr;
 
       days.push(
         <button
@@ -133,8 +133,7 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
     </div>
   );
 
-  // Formata para exibição apenas se houver valor válido
-  const displayValue = value ? formatDate(value) : (placeholder || 'Selecione');
+  const displayValue = cleanValue ? formatDate(cleanValue) : (placeholder || 'Selecione');
 
   return (
     <div className={styles.wrapper}>
@@ -142,7 +141,7 @@ export function DatePicker({ label, value, onChange, placeholder }: DatePickerPr
       
       <div className={styles.inputTrigger} onClick={() => setIsOpen(true)}>
         <CalendarIcon size={20} className={styles.icon} />
-        <span className={clsx(styles.valueText, !value && styles.placeholder)}>
+        <span className={clsx(styles.valueText, !cleanValue && styles.placeholder)}>
           {displayValue}
         </span>
       </div>

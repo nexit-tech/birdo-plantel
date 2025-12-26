@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Bird, Gender } from '@/types';
-import { X, Search } from 'lucide-react';
+import { Bird } from '@/types';
+import { Search } from 'lucide-react';
+import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import styles from './BirdSelectorModal.module.css';
 
 interface BirdSelectorModalProps {
@@ -16,21 +17,18 @@ interface BirdSelectorModalProps {
 export function BirdSelectorModal({ isOpen, onClose, onSelect, candidates, title }: BirdSelectorModalProps) {
   const [search, setSearch] = useState('');
 
-  if (!isOpen) return null;
-
   const filtered = candidates.filter(b => 
     b.name.toLowerCase().includes(search.toLowerCase()) || 
     b.ringNumber.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.sheet}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>{title}</h3>
-          <button onClick={onClose} className={styles.closeBtn}><X size={20} /></button>
-        </div>
-
+    <SheetModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+    >
+      <div className={styles.container}>
         <div className={styles.searchBox}>
           <Search size={16} className={styles.searchIcon} />
           <input 
@@ -60,6 +58,6 @@ export function BirdSelectorModal({ isOpen, onClose, onSelect, candidates, title
           )}
         </div>
       </div>
-    </div>
+    </SheetModal>
   );
 }

@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 import { BreedingCycle } from '@/types';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
 import { Combobox } from '@/components/ui/Combobox/Combobox';
+import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import styles from './CycleModal.module.css';
 
 interface CycleModalProps {
@@ -39,8 +39,6 @@ export function CycleModal({ isOpen, onClose, initialData, onSave }: CycleModalP
     }
   }, [isOpen, initialData]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
@@ -61,74 +59,71 @@ export function CycleModal({ isOpen, onClose, initialData, onSave }: CycleModalP
   ];
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.sheet}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>{initialData ? 'Editar Postura' : 'Nova Postura'}</h3>
-          <button onClick={onClose} className={styles.closeBtn}><X size={24} /></button>
+    <SheetModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialData ? 'Editar Postura' : 'Nova Postura'}
+    >
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <DatePicker 
+              label="Início"
+              value={formData.startDate || ''}
+              onChange={d => setFormData({...formData, startDate: d})}
+            />
+          </div>
+          <div className={styles.field}>
+            <DatePicker 
+              label="Fim (Opcional)"
+              value={formData.endDate || ''}
+              onChange={d => setFormData({...formData, endDate: d})}
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <DatePicker 
-                label="Início"
-                value={formData.startDate || ''}
-                onChange={d => setFormData({...formData, startDate: d})}
-              />
-            </div>
-            <div className={styles.field}>
-              <DatePicker 
-                label="Fim (Opcional)"
-                value={formData.endDate || ''}
-                onChange={d => setFormData({...formData, endDate: d})}
-              />
-            </div>
-          </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <label className={styles.label}>Total Ovos</label>
-              <input 
-                type="number"
-                className={styles.input}
-                value={formData.eggsCount}
-                onChange={e => setFormData({...formData, eggsCount: Number(e.target.value)})}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Eclodiram</label>
-              <input 
-                type="number"
-                className={styles.input}
-                value={formData.hatchedCount}
-                onChange={e => setFormData({...formData, hatchedCount: Number(e.target.value)})}
-              />
-            </div>
-          </div>
-
+        <div className={styles.row}>
           <div className={styles.field}>
-            <Combobox 
-              label="Status"
-              value={formData.status || 'EM_ANDAMENTO'}
-              options={statusOptions}
-              onChange={(val) => setFormData({...formData, status: val as any})}
+            <label className={styles.label}>Total Ovos</label>
+            <input 
+              type="number"
+              className={styles.input}
+              value={formData.eggsCount}
+              onChange={e => setFormData({...formData, eggsCount: Number(e.target.value)})}
             />
           </div>
-
           <div className={styles.field}>
-            <label className={styles.label}>Notas</label>
-            <textarea 
-              className={styles.textarea}
-              placeholder="Observações sobre a postura..."
-              value={formData.notes || ''}
-              onChange={e => setFormData({...formData, notes: e.target.value})}
+            <label className={styles.label}>Eclodiram</label>
+            <input 
+              type="number"
+              className={styles.input}
+              value={formData.hatchedCount}
+              onChange={e => setFormData({...formData, hatchedCount: Number(e.target.value)})}
             />
           </div>
+        </div>
 
-          <button type="submit" className={styles.submitBtn}>Salvar</button>
-        </form>
-      </div>
-    </div>
+        <div className={styles.field}>
+          <Combobox 
+            label="Status"
+            value={formData.status || 'EM_ANDAMENTO'}
+            options={statusOptions}
+            onChange={(val) => setFormData({...formData, status: val as any})}
+          />
+        </div>
+
+        <div className={styles.field}>
+          <label className={styles.label}>Notas</label>
+          <textarea 
+            className={styles.textarea}
+            placeholder="Observações sobre a postura..."
+            value={formData.notes || ''}
+            onChange={e => setFormData({...formData, notes: e.target.value})}
+          />
+        </div>
+
+        <button type="submit" className={styles.submitBtn}>Salvar</button>
+      </form>
+    </SheetModal>
   );
 }

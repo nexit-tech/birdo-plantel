@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { Transaction, TransactionType } from '@/types';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
 import { Combobox } from '@/components/ui/Combobox/Combobox';
+import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import styles from './TransactionModal.module.css';
 import clsx from 'clsx';
 
@@ -44,8 +45,6 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
     }
   }, [initialData, isOpen]);
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
@@ -56,6 +55,7 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
       date: formData.date,
       description: formData.description
     });
+    onClose();
   };
 
   const incomeCategories = [
@@ -73,83 +73,76 @@ export function TransactionModal({ isOpen, onClose, initialData, onSave }: Trans
   ];
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>
-            {initialData ? 'Editar Transação' : 'Nova Transação'}
-          </h3>
-          <button onClick={onClose} className={styles.closeBtn}>
-            <X size={24} />
+    <SheetModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={initialData ? 'Editar Transação' : 'Nova Transação'}
+    >
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.typeSelector}>
+          <button
+            type="button"
+            className={clsx(styles.typeBtn, type === 'RECEITA' && styles.active)}
+            onClick={() => setType('RECEITA')}
+            style={type === 'RECEITA' ? { color: '#10b981' } : {}}
+          >
+            Receita
+          </button>
+          <button
+            type="button"
+            className={clsx(styles.typeBtn, type === 'DESPESA' && styles.active)}
+            onClick={() => setType('DESPESA')}
+            style={type === 'DESPESA' ? { color: '#ef4444' } : {}}
+          >
+            Despesa
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.typeSelector}>
-            <button
-              type="button"
-              className={clsx(styles.typeBtn, type === 'RECEITA' && styles.active)}
-              onClick={() => setType('RECEITA')}
-              style={type === 'RECEITA' ? { color: '#10b981' } : {}}
-            >
-              Receita
-            </button>
-            <button
-              type="button"
-              className={clsx(styles.typeBtn, type === 'DESPESA' && styles.active)}
-              onClick={() => setType('DESPESA')}
-              style={type === 'DESPESA' ? { color: '#ef4444' } : {}}
-            >
-              Despesa
-            </button>
-          </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Valor (R$)</label>
+          <input 
+            type="number"
+            step="0.01"
+            required
+            className={styles.input}
+            placeholder="0,00"
+            value={formData.amount}
+            onChange={e => setFormData({...formData, amount: e.target.value})}
+          />
+        </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Valor (R$)</label>
-            <input 
-              type="number"
-              step="0.01"
-              required
-              className={styles.input}
-              placeholder="0,00"
-              value={formData.amount}
-              onChange={e => setFormData({...formData, amount: e.target.value})}
-            />
-          </div>
+        <div className={styles.field}>
+          <Combobox 
+            label="Categoria"
+            value={formData.category}
+            options={type === 'RECEITA' ? incomeCategories : expenseCategories}
+            onChange={val => setFormData({...formData, category: val})}
+          />
+        </div>
+        
+        <div className={styles.field}>
+          <DatePicker 
+            label="Data"
+            value={formData.date}
+            onChange={d => setFormData({...formData, date: d})}
+          />
+        </div>
 
-          <div className={styles.field}>
-            <Combobox 
-              label="Categoria"
-              value={formData.category}
-              options={type === 'RECEITA' ? incomeCategories : expenseCategories}
-              onChange={val => setFormData({...formData, category: val})}
-            />
-          </div>
-          
-          <div className={styles.field}>
-            <DatePicker 
-              label="Data"
-              value={formData.date}
-              onChange={d => setFormData({...formData, date: d})}
-            />
-          </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Descrição</label>
+          <input 
+            className={styles.input}
+            placeholder="Ex: Compra de ração..."
+            value={formData.description}
+            onChange={e => setFormData({...formData, description: e.target.value})}
+          />
+        </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Descrição</label>
-            <input 
-              className={styles.input}
-              placeholder="Ex: Compra de ração..."
-              value={formData.description}
-              onChange={e => setFormData({...formData, description: e.target.value})}
-            />
-          </div>
-
-          <button type="submit" className={styles.submitBtn}>
-            <Check size={20} />
-            {initialData ? 'Salvar Alterações' : 'Registrar'}
-          </button>
-        </form>
-      </div>
-    </div>
+        <button type="submit" className={styles.submitBtn}>
+          <Check size={20} />
+          {initialData ? 'Salvar Alterações' : 'Registrar'}
+        </button>
+      </form>
+    </SheetModal>
   );
 }

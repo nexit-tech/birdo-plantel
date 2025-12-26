@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import { Pair, PairStatus, Bird } from '@/types';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
 import { Combobox } from '@/components/ui/Combobox/Combobox';
+import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import styles from './NewPairModal.module.css';
 
 interface NewPairModalProps {
@@ -31,8 +31,6 @@ export function NewPairModal({
     status: 'ATIVO' as PairStatus
   });
 
-  if (!isOpen) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -55,6 +53,7 @@ export function NewPairModal({
       cage: '',
       status: 'ATIVO'
     });
+    onClose();
   };
 
   const handleChange = (field: string, value: string) => {
@@ -65,71 +64,66 @@ export function NewPairModal({
   const femaleOptions = availableFemales.map(b => ({ value: b.id, label: `${b.name} (${b.ringNumber})` }));
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.sheet}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>Novo Casal</h3>
-          <button onClick={onClose} className={styles.closeBtn}>
-            <X size={24} />
-          </button>
+    <SheetModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Novo Casal"
+    >
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.field}>
+          <label className={styles.label}>Nome do Casal</label>
+          <input
+            required
+            className={styles.input}
+            placeholder="Ex: Casal Principal"
+            value={formData.name}
+            onChange={(e) => handleChange('name', e.target.value)}
+          />
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.row}>
           <div className={styles.field}>
-            <label className={styles.label}>Nome do Casal</label>
-            <input
-              required
-              className={styles.input}
-              placeholder="Ex: Casal Principal"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+            <Combobox 
+              label="Macho"
+              value={formData.maleId}
+              options={maleOptions}
+              onChange={(val) => handleChange('maleId', val)}
             />
           </div>
-
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <Combobox 
-                label="Macho"
-                value={formData.maleId}
-                options={maleOptions}
-                onChange={(val) => handleChange('maleId', val)}
-              />
-            </div>
-            <div className={styles.field}>
-              <Combobox 
-                label="Fêmea"
-                value={formData.femaleId}
-                options={femaleOptions}
-                onChange={(val) => handleChange('femaleId', val)}
-              />
-            </div>
+          <div className={styles.field}>
+            <Combobox 
+              label="Fêmea"
+              value={formData.femaleId}
+              options={femaleOptions}
+              onChange={(val) => handleChange('femaleId', val)}
+            />
           </div>
+        </div>
 
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <DatePicker 
-                label="Data Início"
-                value={formData.startDate}
-                onChange={(date) => handleChange('startDate', date)}
-                placeholder="DD/MM/AAAA"
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label}>Gaiola</label>
-              <input
-                className={styles.input}
-                placeholder="Nº"
-                value={formData.cage}
-                onChange={(e) => handleChange('cage', e.target.value)}
-              />
-            </div>
+        <div className={styles.row}>
+          <div className={styles.field}>
+            <DatePicker 
+              label="Data Início"
+              value={formData.startDate}
+              onChange={(date) => handleChange('startDate', date)}
+              placeholder="DD/MM/AAAA"
+            />
           </div>
+          <div className={styles.field}>
+            <label className={styles.label}>Gaiola</label>
+            <input
+              className={styles.input}
+              placeholder="Nº"
+              value={formData.cage}
+              onChange={(e) => handleChange('cage', e.target.value)}
+            />
+          </div>
+        </div>
 
-          <button type="submit" className={styles.submitBtn}>
-            Formar Casal
-          </button>
-        </form>
-      </div>
-    </div>
+        <button type="submit" className={styles.submitBtn}>
+          Formar Casal
+        </button>
+      </form>
+    </SheetModal>
   );
 }
