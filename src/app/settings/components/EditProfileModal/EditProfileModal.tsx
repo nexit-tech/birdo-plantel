@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useProfile } from '@/hooks';
 import { Breeder } from '@/types';
 import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import styles from './EditProfileModal.module.css';
@@ -9,18 +8,19 @@ import styles from './EditProfileModal.module.css';
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialData: Breeder | null;
+  onSave: (updated: Breeder) => Promise<void>;
 }
 
-export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
-  const { profile, updateProfile, isLoading } = useProfile();
+export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
   const [formData, setFormData] = useState<Breeder | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (profile) {
-      setFormData(profile);
+    if (initialData) {
+      setFormData(initialData);
     }
-  }, [profile]);
+  }, [initialData]);
 
   if (!isOpen || !formData) return null;
 
@@ -28,7 +28,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     e.preventDefault();
     setIsSaving(true);
     try {
-      await updateProfile(formData);
+      await onSave(formData);
       onClose();
     } catch (error) {
       console.error('Erro ao salvar perfil:', error);
@@ -124,7 +124,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
           <button 
             type="submit"
-            disabled={isSaving || isLoading} 
+            disabled={isSaving} 
             className={styles.saveBtn}
           >
             {isSaving ? 'Salvando...' : 'Salvar Alterações'}
