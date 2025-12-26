@@ -6,7 +6,7 @@ import { PairCard } from './components/PairCard/PairCard';
 import { NewPairModal } from './components/NewPairModal/NewPairModal';
 import { usePairs } from '@/hooks/usePairs';
 import { useBirds } from '@/hooks/useBirds';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Filter } from 'lucide-react';
 import { Pair } from '@/types';
 import styles from './page.module.css';
 
@@ -17,9 +17,8 @@ function PairsListContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const handleSavePair = async (pairData: Pair) => {
-    const { id, cycles, ...data } = pairData;
-    await createPair(data);
+  const handleSavePair = async (pairData: Omit<Pair, 'id' | 'cycles'>) => {
+    await createPair(pairData);
     setIsModalOpen(false);
   };
 
@@ -27,15 +26,15 @@ function PairsListContent() {
     const search = searchTerm.toLowerCase();
     return (
       pair.name?.toLowerCase().includes(search) ||
-      pair.maleId?.toLowerCase().includes(search) ||
-      pair.femaleId?.toLowerCase().includes(search)
+      pair.maleName?.toLowerCase().includes(search) ||
+      pair.femaleName?.toLowerCase().includes(search)
     );
   });
 
   return (
     <div className={styles.container}>
       <Header 
-        title="Meus Casais" 
+        title="Plantel de Reprodução" 
         action={
           <button className={styles.addButton} onClick={() => setIsModalOpen(true)}>
             <Plus size={24} />
@@ -43,36 +42,45 @@ function PairsListContent() {
         }
       />
 
-      <div className={styles.searchWrapper}>
+      <div className={styles.heroSearch}>
         <div className={styles.searchBar}>
-          <Search size={18} className={styles.searchIcon} />
+          <Search size={20} className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Buscar por nome ou identificação..."
+            placeholder="Buscar por casal ou anilha..."
             className={styles.input}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <button className={styles.clearBtn} onClick={() => setSearchTerm('')}>✕</button>
+          )}
         </div>
       </div>
 
-      <div className={styles.list}>
-        {isLoading && pairs.length === 0 ? (
-            <div className={styles.empty}>Carregando casais...</div>
-        ) : (
-          <>
+      <div className={styles.content}>
+        {isLoading ? (
+            <div className={styles.loading}>
+              <div className={styles.spinner} />
+              <span>Carregando genética...</span>
+            </div>
+        ) : filteredPairs.length > 0 ? (
+          <div className={styles.grid}>
             {filteredPairs.map((pair) => (
-              <PairCard key={pair.id} pair={pair} />
+              <PairCard 
+                key={pair.id} 
+                pair={pair}
+                male={birds.find(b => b.id === pair.maleId)}
+                female={birds.find(b => b.id === pair.femaleId)}
+              />
             ))}
-            {filteredPairs.length === 0 && pairs.length > 0 && (
-              <div className={styles.empty}>Nenhum resultado para a busca</div>
-            )}
-            {pairs.length === 0 && !isLoading && (
-              <div className={styles.empty}>
-                Nenhum casal formado
-              </div>
-            )}
-          </>
+          </div>
+        ) : (
+          <div className={styles.empty}>
+            <div className={styles.emptyIcon}>🧬</div>
+            <h3>Nenhum casal encontrado</h3>
+            <p>Toque no + para iniciar uma nova união.</p>
+          </div>
         )}
       </div>
 

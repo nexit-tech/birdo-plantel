@@ -1,8 +1,8 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  width: 100%;
+  gap: 20px;
+  padding: 12px 0 24px;
 }
 
 .row {
@@ -10,50 +10,77 @@
   gap: 12px;
 }
 
+.row > * { flex: 1; }
+
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1;
+  gap: 8px;
 }
 
 .label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #6D6D72;
+  font-size: 14px;
+  color: #8E8E93;
+  font-weight: 500;
   margin-left: 4px;
 }
 
-.input, .select, .textarea {
-  width: 100%;
-  padding: 12px;
+.statsCard {
+  background-color: var(--background);
   border-radius: 12px;
-  border: 1px solid #E5E5EA;
-  background-color: #F9F9F9;
-  font-size: 16px;
-  outline: none;
-  touch-action: manipulation;
+  padding: 16px;
+  display: flex;
+  align-items: center;
 }
 
-.input:focus, .select:focus, .textarea:focus {
-  background-color: #FFFFFF;
-  border-color: #007aff;
+.counter {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.counter label {
+  font-size: 12px;
+  color: #8E8E93;
+}
+
+.counter input {
+  font-size: 24px;
+  font-weight: 600;
+  width: 60px;
+  text-align: center;
+  background: white;
+  border-radius: 8px;
+  border: none;
+  padding: 4px;
+}
+
+.divider {
+  width: 1px;
+  height: 40px;
+  background-color: #C7C7CC;
 }
 
 .textarea {
-  min-height: 80px;
+  width: 100%;
+  background-color: var(--background);
+  border-radius: 12px;
+  border: none;
+  padding: 16px;
+  font-size: 16px;
   resize: none;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .submitBtn {
-  margin-top: 12px;
-  background-color: #007aff;
-  color: #FFFFFF;
-  height: 50px;
-  border-radius: 14px;
+  background-color: var(--primary);
+  color: white;
   font-weight: 600;
   font-size: 16px;
-  border: none;
-  cursor: pointer;
-  touch-action: manipulation;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-top: 8px;
 }

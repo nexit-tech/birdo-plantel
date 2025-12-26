@@ -5,13 +5,6 @@
   padding: 12px 0 24px;
 }
 
-.row {
-  display: flex;
-  gap: 12px;
-}
-
-.row > * { flex: 1; }
-
 .field {
   display: flex;
   flex-direction: column;
@@ -32,7 +25,6 @@
   border: none;
   padding: 16px;
   font-size: 16px;
-  color: var(--foreground);
   outline: none;
   box-sizing: border-box;
 }

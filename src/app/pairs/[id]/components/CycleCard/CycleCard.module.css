@@ -1,68 +1,102 @@
 .card {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  background-color: var(--surface);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
   position: relative;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.card:active {
+  transform: scale(0.98);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
 }
 
-.date {
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.status {
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.active { background: #E8F5E9; color: #2E7D32; }
-.closed { background: #F2F2F7; color: #8E8E93; }
-
-.stats {
+.dateBadge {
+  background-color: var(--background);
+  padding: 6px 12px;
+  border-radius: 8px;
   display: flex;
-  gap: 24px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
 }
 
-.stat {
+.activeBadge, .doneBadge {
   display: flex;
-  flex-direction: column;
-}
-
-.value {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.label {
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  color: #8E8E93;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.activeBadge { color: var(--primary); background-color: #E3F2FD; }
+.doneBadge { color: #8E8E93; background-color: #F2F2F7; }
+
+.progressSection {
+  margin-bottom: 16px;
+}
+
+.labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.label { color: var(--text-secondary); }
+.value { font-weight: 700; color: var(--foreground); }
+
+.progressBarBg {
+  height: 8px;
+  background-color: #F2F2F7;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
 }
 
 .notes {
+  background-color: #FFF9C4;
+  padding: 12px;
+  border-radius: 12px;
+  color: #5D4037;
   font-size: 13px;
-  color: #666;
-  margin-top: 8px;
-  background: #F9F9F9;
-  padding: 8px;
-  border-radius: 6px;
+  line-height: 1.4;
 }
 
 .deleteBtn {
   position: absolute;
-  bottom: 16px;
-  right: 16px;
+  top: 20px;
+  right: -40px;
   color: #FF3B30;
-  background: none;
-  border: none;
+}
+
+.deleteBtn {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: #FEE2E2;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: 16px;
 }

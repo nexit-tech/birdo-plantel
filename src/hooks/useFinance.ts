@@ -59,20 +59,29 @@ export function useFinance() {
       description: transaction.description
     };
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('transactions')
       .update(dbTransaction)
-      .eq('id', transaction.id);
+      .eq('id', transaction.id)
+      .select()
+      .single();
 
     if (error) throw error;
 
+    const updatedTransaction = mapTransactionFromDB(data);
     setTransactions(prev => 
-      prev.map(t => t.id === transaction.id ? transaction : t)
+      prev.map(t => t.id === transaction.id ? updatedTransaction : t)
     );
   };
 
   const deleteTransaction = async (id: string) => {
-    await supabase.from('transactions').delete().eq('id', id);
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 

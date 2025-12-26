@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Pair } from '@/types';
+import { mapCycleFromDB } from '@/utils/mappers';
 
 export interface PairWithNames extends Pair {
   maleName?: string;
@@ -21,7 +22,8 @@ export function usePairs() {
         .select(`
           *,
           male:birds!male_id(name),
-          female:birds!female_id(name)
+          female:birds!female_id(name),
+          cycles:breeding_cycles(*)
         `)
         .order('created_at', { ascending: false });
 
@@ -35,7 +37,7 @@ export function usePairs() {
         startDate: item.start_date,
         status: item.status,
         cage: item.cage,
-        cycles: item.cycles || [],
+        cycles: item.cycles ? item.cycles.map(mapCycleFromDB) : [],
         maleName: item.male?.name,
         femaleName: item.female?.name
       }));

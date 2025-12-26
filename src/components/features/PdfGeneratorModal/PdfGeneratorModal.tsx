@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, FileText, Download } from 'lucide-react';
+import { Search, FileText, Download, Loader2 } from 'lucide-react';
 import { Bird } from '@/types';
 import { generatePedigreePDF } from '@/utils/pdfGenerator';
 import { ColorPicker } from '@/components/ui/ColorPicker/ColorPicker';
@@ -22,6 +22,7 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
   const [selectedBird, setSelectedBird] = useState<Bird | null>(null);
   const [bgColor, setBgColor] = useState('#FFFFFF');
   const [mounted, setMounted] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -34,9 +35,16 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
     b.ringNumber.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (selectedBird && profile) {
-      generatePedigreePDF(selectedBird, profile, bgColor, birds);
+      setIsGenerating(true);
+      try {
+        await generatePedigreePDF(selectedBird, profile, bgColor, birds);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsGenerating(false);
+      }
     }
   };
 
@@ -100,14 +108,19 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
           />
 
           <div className={styles.actions}>
-            <button onClick={handleDownload} className={styles.downloadBtn}>
-              <Download size={20} />
-              Baixar Ficha PDF
+            <button 
+              onClick={handleDownload} 
+              className={styles.downloadBtn}
+              disabled={isGenerating}
+            >
+              {isGenerating ? <Loader2 size={20} className={styles.spin} /> : <Download size={20} />}
+              {isGenerating ? 'Gerando...' : 'Baixar Ficha PDF'}
             </button>
 
             <button 
               className={styles.backBtn}
               onClick={() => setSelectedBird(null)}
+              disabled={isGenerating}
             >
               Selecionar Outra Ave
             </button>

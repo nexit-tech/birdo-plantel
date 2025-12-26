@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Bird, Pair } from '@/types';
-import { Heart, ChevronRight } from 'lucide-react';
+import { ChevronRight, Activity } from 'lucide-react';
 import clsx from 'clsx';
 import styles from './PairCard.module.css';
 
@@ -11,43 +11,53 @@ interface PairCardProps {
 }
 
 export function PairCard({ pair, male, female }: PairCardProps) {
+  const activeCycles = pair.cycles?.filter(c => c.status === 'EM_ANDAMENTO').length || 0;
+  const totalCycles = pair.cycles?.length || 0;
+
   return (
     <Link href={`/pairs/${pair.id}`} className={styles.card}>
-      <div className={styles.header}>
-        <div className={styles.pairInfo}>
-          <span className={styles.pairName}>{pair.name}</span>
-          <span className={styles.cage}>{pair.cage}</span>
-        </div>
-        <div className={clsx(styles.statusBadge, styles[pair.status.toLowerCase()])}>
-          {pair.status}
-        </div>
+      <div className={styles.statusLine}>
+        <span className={clsx(styles.statusDot, styles[pair.status.toLowerCase()])} />
+        <span className={styles.statusText}>{pair.status}</span>
+        {activeCycles > 0 && (
+          <span className={styles.activeBadge}>
+            <Activity size={12} /> Em Reprodução
+          </span>
+        )}
       </div>
 
       <div className={styles.birdsContainer}>
-        <div className={styles.birdSide}>
+        <div className={styles.birdInfo}>
           <div className={clsx(styles.avatar, styles.maleAvatar)}>♂</div>
-          <div className={styles.birdDetails}>
-            <span className={styles.birdName}>{male?.name || 'Desconhecido'}</span>
-            <span className={styles.birdRing}>{male?.ringNumber || '-'}</span>
+          <div className={styles.birdText}>
+            <span className={styles.birdName}>{male?.name || 'Macho'}</span>
+            <span className={styles.ring}>{male?.ringNumber || 'S/A'}</span>
           </div>
         </div>
 
         <div className={styles.connector}>
-          <Heart size={16} className={styles.heartIcon} />
+          <div className={styles.line} />
+          <div className={styles.heart}>♥</div>
         </div>
 
-        <div className={styles.birdSide}>
-          <div className={clsx(styles.avatar, styles.femaleAvatar)}>♀</div>
-          <div className={styles.birdDetails}>
-            <span className={styles.birdName}>{female?.name || 'Desconhecida'}</span>
-            <span className={styles.birdRing}>{female?.ringNumber || '-'}</span>
+        <div className={styles.birdInfo}>
+          <div className={styles.birdTextRight}>
+            <span className={styles.birdName}>{female?.name || 'Fêmea'}</span>
+            <span className={styles.ring}>{female?.ringNumber || 'S/A'}</span>
           </div>
+          <div className={clsx(styles.avatar, styles.femaleAvatar)}>♀</div>
         </div>
       </div>
-      
+
       <div className={styles.footer}>
-        <span className={styles.date}>Desde {new Date(pair.startDate).toLocaleDateString('pt-BR')}</span>
-        <ChevronRight size={16} className={styles.arrow} />
+        <div className={styles.meta}>
+          <span className={styles.pairName}>{pair.name}</span>
+          <span className={styles.cage}>Gaiola {pair.cage}</span>
+        </div>
+        <div className={styles.stats}>
+          <span>{totalCycles} Ciclos</span>
+          <ChevronRight size={18} className={styles.arrow} />
+        </div>
       </div>
     </Link>
   );

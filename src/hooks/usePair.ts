@@ -33,9 +33,40 @@ export function usePair(id: string) {
     if (id) fetchPair();
   }, [id, fetchPair]);
 
+  const updatePair = async (updatedData: Partial<Pair>) => {
+    if (!pair) return;
+
+    try {
+      const dbPair = {
+        name: updatedData.name ?? pair.name,
+        male_id: updatedData.maleId ?? pair.maleId,
+        female_id: updatedData.femaleId ?? pair.femaleId,
+        start_date: updatedData.startDate ?? pair.startDate,
+        status: updatedData.status ?? pair.status,
+        cage: updatedData.cage ?? pair.cage
+      };
+
+      const { data, error } = await supabase
+        .from('pairs')
+        .update(dbPair)
+        .eq('id', id)
+        .select(`
+          *,
+          cycles:breeding_cycles(*)
+        `)
+        .single();
+
+      if (error) throw error;
+
+      setPair(mapPairFromDB(data));
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const updateStatus = async (status: PairStatus) => {
-    await supabase.from('pairs').update({ status }).eq('id', id);
-    setPair(prev => prev ? { ...prev, status } : null);
+    await updatePair({ status });
   };
 
   const addCycle = async (cycle: Omit<BreedingCycle, 'id'>) => {
@@ -72,15 +103,18 @@ export function usePair(id: string) {
       status: cycle.status
     };
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('breeding_cycles')
       .update(dbCycle)
-      .eq('id', cycle.id);
+      .eq('id', cycle.id)
+      .select()
+      .single();
 
-    if (!error) {
+    if (!error && data) {
+      const updatedCycle = mapCycleFromDB(data);
       setPair(prev => prev ? {
         ...prev,
-        cycles: prev.cycles.map(c => c.id === cycle.id ? cycle : c)
+        cycles: prev.cycles.map(c => c.id === cycle.id ? updatedCycle : c)
       } : null);
     }
   };
@@ -100,6 +134,7 @@ export function usePair(id: string) {
   return {
     pair,
     loading,
+    updatePair, 
     updateStatus,
     addCycle,
     updateCycle,

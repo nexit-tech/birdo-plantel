@@ -12,14 +12,17 @@ export function useBirds() {
   const fetchBirds = useCallback(async () => {
     try {
       setIsLoading(true);
+      // Alterado para buscar relacionamentos usando alias para bater com o mapper
       const { data, error } = await supabase
         .from('birds')
-        .select('*')
+        .select('*, logs:bird_logs(*), weights:bird_weights(*)')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const formattedBirds = (data || []).map(mapBirdFromDB);
+      // O typecast 'any' ajuda aqui pois o retorno do join do Supabase é dinâmico
+      // e o mapper fará a validação/conversão correta
+      const formattedBirds = (data || []).map((item: any) => mapBirdFromDB(item));
       setBirds(formattedBirds);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao buscar pássaros');
@@ -52,7 +55,7 @@ export function useBirds() {
       const { data, error } = await supabase
         .from('birds')
         .insert([dbBird])
-        .select()
+        .select('*, logs:bird_logs(*), weights:bird_weights(*)')
         .single();
 
       if (error) throw error;
@@ -86,7 +89,7 @@ export function useBirds() {
         .from('birds')
         .update(dbBird)
         .eq('id', bird.id)
-        .select()
+        .select('*, logs:bird_logs(*), weights:bird_weights(*)')
         .single();
 
       if (error) throw error;

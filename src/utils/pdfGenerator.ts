@@ -1,7 +1,17 @@
 import { jsPDF } from 'jspdf';
 import { Bird, Breeder } from '@/types';
 
-export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: string, allBirds: Bird[]) => {
+const loadImage = (url: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.src = url;
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+  });
+};
+
+export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor: string, allBirds: Bird[]) => {
   
   const getBirdObj = (id?: string) => allBirds.find(b => b.id === id);
 
@@ -22,6 +32,17 @@ export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: strin
     unit: 'mm',
     format: 'a4'
   });
+
+  let breederLogo: HTMLImageElement | null = null;
+  if (breeder.photoUrl) {
+    try {
+      breederLogo = await loadImage(breeder.photoUrl);
+    } catch (error) {
+      console.error('Erro ao carregar logo', error);
+    }
+  }
+
+  const initial = breeder.name ? breeder.name.charAt(0).toUpperCase() : 'B';
 
   const pageW = 210;
   const margin = 10;
@@ -45,8 +66,21 @@ export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: strin
   doc.saveGraphicsState();
   // @ts-ignore
   doc.setGState(new doc.GState({ opacity: 0.15 }));
-  doc.setFillColor(0, 0, 0);
-  doc.circle(rightX + (rightW / 2), startY + (cardH / 2), 30, 'F');
+  
+  const watermarkCX = rightX + (rightW / 2);
+  const watermarkCY = startY + (cardH / 2);
+
+  if (breederLogo) {
+    const wSize = 60;
+    doc.addImage(breederLogo, 'PNG', watermarkCX - (wSize/2), watermarkCY - (wSize/2), wSize, wSize);
+  } else {
+    doc.setFillColor(0, 0, 0);
+    doc.circle(watermarkCX, watermarkCY, 30, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(40);
+    doc.setFont('helvetica', 'bold');
+    doc.text(initial, watermarkCX, watermarkCY + 14, { align: 'center' });
+  }
   doc.restoreGraphicsState();
 
   const lx = margin + 2;
@@ -62,12 +96,20 @@ export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: strin
   const headerH = 22;
   drawWhiteBox(lx, ly, leftW, headerH, 2);
 
-  doc.setFillColor(30, 30, 30);
-  doc.circle(lx + 11, ly + 11, 8, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(5);
-  doc.setFont('helvetica', 'bold');
-  doc.text('BIRDO', lx + 11, ly + 12, { align: 'center' });
+  const headerIconCX = lx + 11;
+  const headerIconCY = ly + 11;
+
+  if (breederLogo) {
+    const hSize = 16;
+    doc.addImage(breederLogo, 'PNG', headerIconCX - (hSize/2), headerIconCY - (hSize/2), hSize, hSize);
+  } else {
+    doc.setFillColor(30, 30, 30);
+    doc.circle(headerIconCX, headerIconCY, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text(initial, headerIconCX, headerIconCY + 3.5, { align: 'center' });
+  }
 
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(7);
@@ -143,7 +185,6 @@ export const generatePedigreePDF = (bird: Bird, breeder: Breeder, bgColor: strin
   doc.setFontSize(6);
   doc.setTextColor(80, 80, 80);
   doc.text('Documento gerado digitalmente pelo sistema Birdo.', lx + (leftW/2), footerTextY, { align: 'center' });
-
 
   const ry = contentStartY;
   const rw = rightW;

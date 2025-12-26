@@ -35,30 +35,40 @@ export function useBird(id: string) {
   }, [id, fetchBird]);
 
   const updateBird = async (updatedData: Partial<Bird>) => {
+    if (!bird) return;
+
     try {
+      const mergedBird = { ...bird, ...updatedData };
+
       const dbBird = {
-        name: updatedData.name,
-        ring_number: updatedData.ringNumber,
-        species: updatedData.species,
-        mutation: updatedData.mutation,
-        gender: updatedData.gender,
-        birth_date: updatedData.birthDate,
-        status: updatedData.status,
-        cage: updatedData.cage,
-        father_id: updatedData.fatherId,
-        mother_id: updatedData.motherId,
-        photo_url: updatedData.photoUrl,
-        notes: updatedData.notes
+        name: mergedBird.name,
+        ring_number: mergedBird.ringNumber,
+        species: mergedBird.species,
+        mutation: mergedBird.mutation,
+        gender: mergedBird.gender,
+        birth_date: mergedBird.birthDate,
+        status: mergedBird.status,
+        cage: mergedBird.cage,
+        father_id: mergedBird.fatherId,
+        mother_id: mergedBird.motherId,
+        photo_url: mergedBird.photoUrl,
+        notes: mergedBird.notes
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('birds')
         .update(dbBird)
-        .eq('id', id);
+        .eq('id', id)
+        .select(`
+          *,
+          logs:bird_logs(*),
+          weights:bird_weights(*)
+        `)
+        .single();
 
       if (error) throw error;
 
-      setBird(prev => prev ? { ...prev, ...updatedData } : null);
+      setBird(mapBirdFromDB(data));
     } catch (error) {
       console.error(error);
       throw error;
@@ -80,8 +90,7 @@ export function useBird(id: string) {
   };
 
   const updateStatus = async (status: BirdStatus) => {
-    await supabase.from('birds').update({ status }).eq('id', id);
-    setBird(prev => prev ? { ...prev, status } : null);
+    await updateBird({ status });
   };
 
   const addLog = async (log: Omit<BirdLog, 'id'>) => {
@@ -100,15 +109,18 @@ export function useBird(id: string) {
   };
 
   const updateLog = async (log: BirdLog) => {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('bird_logs')
       .update({ title: log.title, notes: log.notes, date: log.date, icon: log.icon })
-      .eq('id', log.id);
+      .eq('id', log.id)
+      .select()
+      .single();
 
-    if (!error) {
+    if (!error && data) {
+      const updatedLog = mapLogFromDB(data);
       setBird(prev => prev ? {
         ...prev,
-        logs: prev.logs.map(l => l.id === log.id ? log : l)
+        logs: prev.logs.map(l => l.id === log.id ? updatedLog : l)
       } : null);
     }
   };
@@ -121,13 +133,15 @@ export function useBird(id: string) {
   const saveWeight = async (weight: Omit<BirdWeight, 'id'> | BirdWeight) => {
     const isEdit = 'id' in weight;
     const payload = isEdit 
-      ? weight 
+      ? { weight: weight.weight, height: weight.height, date: weight.date } 
       : { ...weight, bird_id: id };
     
     const query = supabase.from('bird_weights');
+
     const { data, error } = await (isEdit 
       ? query.update(payload).eq('id', (weight as BirdWeight).id)
-      : query.insert([payload])).select().single();
+      : query.insert([payload])
+    ).select().single();
 
     if (!error && data) {
       const newWeight = mapWeightFromDB(data);
@@ -148,7 +162,14 @@ export function useBird(id: string) {
 
   const updateParent = async (type: 'PAI' | 'MAE', parentId?: string) => {
     const field = type === 'PAI' ? 'father_id' : 'mother_id';
-    await supabase.from('birds').update({ [field]: parentId || null }).eq('id', id);
+
+    const { error } = await supabase
+        .from('birds')
+        .update({ [field]: parentId || null })
+        .eq('id', id);
+        
+    if (error) throw error;
+
     setBird(prev => prev ? { 
       ...prev, 
       fatherId: type === 'PAI' ? parentId : prev.fatherId,

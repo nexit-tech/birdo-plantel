@@ -23,8 +23,7 @@ export function useDashboard() {
 
       const { count: pairsCount } = await supabase
         .from('pairs')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'ATIVO');
+        .select('*', { count: 'exact', head: true });
 
       const { count: availableCount } = await supabase
         .from('birds')

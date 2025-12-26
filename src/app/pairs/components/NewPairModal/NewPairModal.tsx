@@ -10,119 +10,73 @@ import styles from './NewPairModal.module.css';
 interface NewPairModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (pair: Pair) => void;
+  onSave: (pair: Omit<Pair, 'id' | 'cycles'>) => void;
   availableMales: Bird[];
   availableFemales: Bird[];
 }
 
-export function NewPairModal({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  availableMales, 
-  availableFemales 
-}: NewPairModalProps) {
+export function NewPairModal({ isOpen, onClose, onSave, availableMales, availableFemales }: NewPairModalProps) {
   const [formData, setFormData] = useState({
     name: '',
     maleId: '',
     femaleId: '',
-    startDate: '',
+    startDate: new Date().toISOString().split('T')[0],
     cage: '',
     status: 'ATIVO' as PairStatus
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.maleId || !formData.femaleId) {
-      return;
-    }
-
-    const newPair: Pair = {
-      id: Math.random().toString(),
-      ...formData,
-      cycles: []
-    };
-
-    onSave(newPair);
+    if (!formData.maleId || !formData.femaleId) return;
+    onSave(formData);
+    onClose();
     setFormData({
       name: '',
       maleId: '',
       femaleId: '',
-      startDate: '',
+      startDate: new Date().toISOString().split('T')[0],
       cage: '',
       status: 'ATIVO'
     });
-    onClose();
-  };
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const maleOptions = availableMales.map(b => ({ value: b.id, label: `${b.name} (${b.ringNumber})` }));
   const femaleOptions = availableFemales.map(b => ({ value: b.id, label: `${b.name} (${b.ringNumber})` }));
 
   return (
-    <SheetModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Novo Casal"
-    >
+    <SheetModal isOpen={isOpen} onClose={onClose} title="Novo Casal">
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.field}>
-          <label className={styles.label}>Nome do Casal</label>
+          <label className={styles.label}>Nome</label>
           <input
             required
             className={styles.input}
-            placeholder="Ex: Casal Principal"
             value={formData.name}
-            onChange={(e) => handleChange('name', e.target.value)}
+            onChange={(e) => setFormData({...formData, name: e.target.value})}
+            placeholder="Ex: Casal Principal"
           />
         </div>
-
+        
         <div className={styles.row}>
           <div className={styles.field}>
-            <Combobox 
-              label="Macho"
-              value={formData.maleId}
-              options={maleOptions}
-              onChange={(val) => handleChange('maleId', val)}
-            />
+            <Combobox label="Macho" value={formData.maleId} options={maleOptions} onChange={(v) => setFormData({...formData, maleId: v})} />
           </div>
           <div className={styles.field}>
-            <Combobox 
-              label="Fêmea"
-              value={formData.femaleId}
-              options={femaleOptions}
-              onChange={(val) => handleChange('femaleId', val)}
-            />
+            <Combobox label="Fêmea" value={formData.femaleId} options={femaleOptions} onChange={(v) => setFormData({...formData, femaleId: v})} />
           </div>
         </div>
 
         <div className={styles.row}>
           <div className={styles.field}>
-            <DatePicker 
-              label="Data Início"
-              value={formData.startDate}
-              onChange={(date) => handleChange('startDate', date)}
-              placeholder="DD/MM/AAAA"
-            />
+            <DatePicker label="Início" value={formData.startDate} onChange={(d) => setFormData({...formData, startDate: d})} />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Gaiola</label>
-            <input
-              className={styles.input}
-              placeholder="Nº"
-              value={formData.cage}
-              onChange={(e) => handleChange('cage', e.target.value)}
-            />
+            <input className={styles.input} value={formData.cage} onChange={(e) => setFormData({...formData, cage: e.target.value})} />
           </div>
         </div>
 
-        <button type="submit" className={styles.submitBtn}>
-          Formar Casal
-        </button>
+        <button type="submit" className={styles.submitBtn}>Criar Casal</button>
       </form>
     </SheetModal>
   );

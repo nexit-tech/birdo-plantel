@@ -45,14 +45,16 @@ export function useProfile() {
         photo_url: updatedData.photoUrl
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update(dbProfile)
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setProfile(updatedData);
+      setProfile(mapProfileFromDB(data));
     } catch (err) {
       throw err;
     }

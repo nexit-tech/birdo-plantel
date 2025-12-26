@@ -11,115 +11,70 @@ interface CycleModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialData?: BreedingCycle | null;
-  onSave: (cycle: BreedingCycle) => void;
+  onSave: (cycle: Omit<BreedingCycle, 'id'> | BreedingCycle) => void;
 }
 
 export function CycleModal({ isOpen, onClose, initialData, onSave }: CycleModalProps) {
-  const [formData, setFormData] = useState<Partial<BreedingCycle>>({
-    startDate: new Date().toISOString().split('T')[0],
-    eggsCount: 0,
-    hatchedCount: 0,
-    status: 'EM_ANDAMENTO',
-    notes: ''
-  });
+  const [formData, setFormData] = useState<Partial<BreedingCycle>>({});
 
   useEffect(() => {
     if (isOpen) {
-      if (initialData) {
-        setFormData(initialData);
-      } else {
-        setFormData({
-          startDate: new Date().toISOString().split('T')[0],
-          eggsCount: 0,
-          hatchedCount: 0,
-          status: 'EM_ANDAMENTO',
-          notes: ''
-        });
-      }
+      setFormData(initialData || {
+        startDate: new Date().toISOString().split('T')[0],
+        eggsCount: 0,
+        hatchedCount: 0,
+        status: 'EM_ANDAMENTO',
+        notes: ''
+      });
     }
   }, [isOpen, initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({
-      id: initialData?.id || Math.random().toString(),
-      startDate: formData.startDate!,
-      endDate: formData.endDate,
-      eggsCount: Number(formData.eggsCount),
-      hatchedCount: Number(formData.hatchedCount),
-      status: formData.status as 'EM_ANDAMENTO' | 'CONCLUIDO',
-      notes: formData.notes
-    });
+    if (initialData?.id) {
+      onSave({ ...formData, id: initialData.id } as BreedingCycle);
+    } else {
+      onSave(formData as Omit<BreedingCycle, 'id'>);
+    }
     onClose();
   };
 
-  const statusOptions = [
-    { value: 'EM_ANDAMENTO', label: 'Em Andamento' },
-    { value: 'CONCLUIDO', label: 'Concluído' }
-  ];
-
   return (
-    <SheetModal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={initialData ? 'Editar Postura' : 'Nova Postura'}
-    >
+    <SheetModal isOpen={isOpen} onClose={onClose} title={initialData ? 'Editar Ciclo' : 'Novo Ciclo'}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.row}>
           <div className={styles.field}>
-            <DatePicker 
-              label="Início"
-              value={formData.startDate || ''}
-              onChange={d => setFormData({...formData, startDate: d})}
-            />
+            <DatePicker label="Início" value={formData.startDate || ''} onChange={d => setFormData({...formData, startDate: d})} />
           </div>
           <div className={styles.field}>
-            <DatePicker 
-              label="Fim (Opcional)"
-              value={formData.endDate || ''}
-              onChange={d => setFormData({...formData, endDate: d})}
-            />
+            <DatePicker label="Fim" value={formData.endDate || ''} onChange={d => setFormData({...formData, endDate: d})} />
           </div>
         </div>
 
-        <div className={styles.row}>
-          <div className={styles.field}>
-            <label className={styles.label}>Total Ovos</label>
-            <input 
-              type="number"
-              className={styles.input}
-              value={formData.eggsCount}
-              onChange={e => setFormData({...formData, eggsCount: Number(e.target.value)})}
-            />
+        <div className={styles.statsCard}>
+          <div className={styles.counter}>
+            <label>Ovos</label>
+            <input type="number" value={formData.eggsCount} onChange={e => setFormData({...formData, eggsCount: Number(e.target.value)})} />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Eclodiram</label>
-            <input 
-              type="number"
-              className={styles.input}
-              value={formData.hatchedCount}
-              onChange={e => setFormData({...formData, hatchedCount: Number(e.target.value)})}
-            />
+          <div className={styles.divider} />
+          <div className={styles.counter}>
+            <label>Filhotes</label>
+            <input type="number" value={formData.hatchedCount} onChange={e => setFormData({...formData, hatchedCount: Number(e.target.value)})} />
           </div>
         </div>
 
         <div className={styles.field}>
           <Combobox 
-            label="Status"
-            value={formData.status || 'EM_ANDAMENTO'}
-            options={statusOptions}
-            onChange={(val) => setFormData({...formData, status: val as any})}
+            label="Status" 
+            value={formData.status || 'EM_ANDAMENTO'} 
+            options={[{value: 'EM_ANDAMENTO', label: 'Em Andamento'}, {value: 'CONCLUIDO', label: 'Concluído'}]} 
+            onChange={v => setFormData({...formData, status: v as any})} 
           />
         </div>
 
         <div className={styles.field}>
           <label className={styles.label}>Notas</label>
-          <textarea 
-            className={styles.textarea}
-            placeholder="Observações sobre a postura..."
-            value={formData.notes || ''}
-            onChange={e => setFormData({...formData, notes: e.target.value})}
-          />
+          <textarea className={styles.textarea} value={formData.notes || ''} onChange={e => setFormData({...formData, notes: e.target.value})} rows={3} />
         </div>
 
         <button type="submit" className={styles.submitBtn}>Salvar</button>
