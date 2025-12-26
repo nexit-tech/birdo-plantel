@@ -1,159 +1,140 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Camera, Loader2 } from 'lucide-react';
+import { useProfile } from '@/hooks';
 import { Breeder } from '@/types';
-import { uploadImage } from '@/utils/storage';
 import styles from './EditProfileModal.module.css';
 
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialData: Breeder | null;
-  onSave: (data: Breeder) => void;
 }
 
-export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditProfileModalProps) {
-  const [uploading, setUploading] = useState(false);
-  const [formData, setFormData] = useState<Breeder>({
-    id: '',
-    name: '',
-    email: '',
-    registryNumber: '',
-    phone: '',
-    city: '',
-    photoUrl: ''
-  });
+export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
+  const { profile, updateProfile, isLoading } = useProfile();
+  const [formData, setFormData] = useState<Breeder | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
+    if (profile) {
+      setFormData(profile);
     }
-  }, [initialData, isOpen]);
+  }, [profile]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !formData) return null;
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploading(true);
-    const url = await uploadImage(file, 'profile');
-    
-    if (url) {
-      setFormData(prev => ({ ...prev, photoUrl: url }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await updateProfile(formData);
+      onClose();
+    } catch (error) {
+      console.error('Erro ao salvar perfil:', error);
+      alert('Erro ao salvar as alterações.');
+    } finally {
+      setIsSaving(false);
     }
-    setUploading(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave(formData);
-    onClose();
+  const handleChange = (field: keyof Breeder, value: string) => {
+    setFormData(prev => prev ? { ...prev, [field]: value } : null);
   };
 
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className={styles.modal}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>Editar Perfil</h3>
-          <button onClick={onClose} className={styles.closeBtn}>
-            <X size={24} />
+        <header className={styles.header}>
+          <button type="button" onClick={onClose} className={styles.cancelBtn}>
+            Cancelar
           </button>
-        </div>
+          <span className={styles.title}>Editar Perfil</span>
+          <button 
+            onClick={handleSubmit} 
+            disabled={isSaving || isLoading} 
+            className={styles.saveBtn}
+          >
+            {isSaving ? 'Salvando...' : 'Salvar'}
+          </button>
+        </header>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.imageUploadSection}>
-            <div className={styles.imageWrapper}>
-              {formData.photoUrl ? (
-                <img 
-                  src={formData.photoUrl} 
-                  alt="Logo do Criatório" 
-                  className={styles.imagePreview} 
-                />
-              ) : (
-                <div className={styles.placeholder}>
-                  <Camera size={32} className={styles.cameraIcon} />
-                </div>
-              )}
-              
-              {uploading && (
-                <div className={styles.uploadingOverlay}>
-                  <Loader2 className={styles.spinner} size={24} />
-                </div>
-              )}
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className={styles.fileInput}
-                id="profile-photo-upload"
-              />
-              <label htmlFor="profile-photo-upload" className={styles.uploadLabel}>
-                {formData.photoUrl ? 'Alterar Logo' : 'Adicionar Logo'}
-              </label>
+        <div className={styles.content}>
+          <div className={styles.avatarSection}>
+            <div className={styles.avatar}>
+               {formData.photoUrl ? (
+                 <img src={formData.photoUrl} alt="Avatar" style={{width: '100%', height: '100%', borderRadius: '50%'}} />
+               ) : (
+                 <span>{formData.name.charAt(0).toUpperCase()}</span>
+               )}
             </div>
+            <button className={styles.editPhotoBtn}>Alterar Foto</button>
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.label}>Nome do Criatório / Criador</label>
-            <input
-              className={styles.input}
-              value={formData.name}
-              onChange={e => setFormData({...formData, name: e.target.value})}
-              required
-              placeholder="Ex: Criadouro Silva"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>Email</label>
-            <input
-              className={styles.input}
-              type="email"
-              value={formData.email}
-              onChange={e => setFormData({...formData, email: e.target.value})}
-              required
-              placeholder="seu@email.com"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.label}>Registro (IBAMA/FOB)</label>
-            <input
-              className={styles.input}
-              value={formData.registryNumber}
-              onChange={e => setFormData({...formData, registryNumber: e.target.value})}
-              placeholder="Ex: 123456"
-            />
-          </div>
-
-          <div className={styles.row}>
-             <div className={styles.field}>
-                <label className={styles.label}>Telefone</label>
+          <form onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <div className={styles.inputRow}>
+                <label className={styles.label}>Nome do Criatório / Criador</label>
                 <input
+                  type="text"
                   className={styles.input}
-                  value={formData.phone}
-                  onChange={e => setFormData({...formData, phone: e.target.value})}
-                  placeholder="(00) 00000-0000"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="Seu nome"
                 />
-             </div>
-             <div className={styles.field}>
-                <label className={styles.label}>Cidade/UF</label>
+              </div>
+              
+              <div className={styles.inputRow}>
+                <label className={styles.label}>Cidade</label>
                 <input
+                  type="text"
                   className={styles.input}
                   value={formData.city}
-                  onChange={e => setFormData({...formData, city: e.target.value})}
-                  placeholder="Ex: São Paulo - SP"
+                  onChange={(e) => handleChange('city', e.target.value)}
+                  placeholder="Sua cidade"
                 />
-             </div>
-          </div>
+              </div>
+            </div>
 
-          <button type="submit" className={styles.submitBtn}>
-            Salvar Alterações
-          </button>
-        </form>
+            <div className={styles.formGroup}>
+              <div className={styles.inputRow}>
+                <label className={styles.label}>Registro (CTF/IBAMA)</label>
+                <input
+                  type="text"
+                  className={styles.input}
+                  value={formData.registryNumber}
+                  onChange={(e) => handleChange('registryNumber', e.target.value)}
+                  placeholder="000000"
+                />
+              </div>
+
+              <div className={styles.inputRow}>
+                <label className={styles.label}>Telefone</label>
+                <input
+                  type="tel"
+                  className={styles.input}
+                  value={formData.phone}
+                  onChange={(e) => handleChange('phone', e.target.value)}
+                  placeholder="(00) 00000-0000"
+                />
+              </div>
+
+              <div className={styles.inputRow}>
+                <label className={styles.label}>E-mail</label>
+                <input
+                  type="email"
+                  className={styles.input}
+                  value={formData.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  placeholder="seu@email.com"
+                  readOnly 
+                  style={{ opacity: 0.6 }}
+                />
+              </div>
+            </div>
+
+          </form>
+        </div>
       </div>
     </div>
   );

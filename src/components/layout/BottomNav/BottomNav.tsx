@@ -9,15 +9,13 @@ import styles from './BottomNav.module.css';
 
 export function BottomNav() {
   const pathname = usePathname();
-  const [isHidden, setIsHidden] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // 1. Evita erro de hidratação: só renderiza lógica de rota após montar no cliente
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // 2. Observer para Modais (sua lógica original)
   useEffect(() => {
     const checkModalOpen = () => {
       const overlays = document.querySelectorAll('[class*="overlay"]');
@@ -26,12 +24,11 @@ export function BottomNav() {
         const style = window.getComputedStyle(el);
         return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
       });
-      setIsHidden(hasOpenModal);
+      setIsModalOpen(hasOpenModal);
     };
 
     const observer = new MutationObserver(checkModalOpen);
     
-    // Adiciona verificação inicial segura
     if (typeof document !== 'undefined') {
       observer.observe(document.body, {
         childList: true,
@@ -45,11 +42,13 @@ export function BottomNav() {
     return () => observer.disconnect();
   }, []);
 
-  // SE não estiver montado, ou se a rota for login, não exibe nada.
-  // O null aqui é seguro pois ocorre após o 'use client' assumir.
   if (!isMounted || pathname === '/login') {
     return null;
   }
+
+  const isBirdDetails = pathname.startsWith('/birds/') && pathname !== '/birds';
+  const isPairDetails = pathname.startsWith('/pairs/') && pathname !== '/pairs';
+  const shouldHide = isModalOpen || isBirdDetails || isPairDetails;
 
   const navItems = [
     { label: 'Início', href: '/', icon: Home },
@@ -60,7 +59,7 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className={clsx(styles.nav, isHidden && styles.hidden)}>
+    <nav className={clsx(styles.nav, shouldHide && styles.hidden)}>
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         return (
