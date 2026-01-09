@@ -1,16 +1,23 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { hexToHsv, hsvToHex, hsvToRgb, rgbToHex } from '@/utils/color';
 import { Pipette } from 'lucide-react';
+import clsx from 'clsx';
 import styles from './CustomSpectrum.module.css';
 
-interface CustomSpectrumProps {
+type InteractionEvent = 
+  | MouseEvent 
+  | TouchEvent 
+  | React.MouseEvent<HTMLDivElement> 
+  | React.TouchEvent<HTMLDivElement>;
+
+interface CustomSpectrumProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange' | 'color'> {
   color: string;
   onChange: (color: string) => void;
 }
 
-export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
+export function CustomSpectrum({ color, onChange, className, ...props }: CustomSpectrumProps) {
   const [hsv, setHsv] = useState(hexToHsv(color));
   const satRef = useRef<HTMLDivElement>(null);
   const hueRef = useRef<HTMLDivElement>(null);
@@ -23,11 +30,27 @@ export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
     }
   }, [color, isDraggingSat, isDraggingHue]);
 
-  const handleSatChange = useCallback((e: MouseEvent | React.MouseEvent) => {
+  const getClientPos = (e: InteractionEvent) => {
+    if ('touches' in e && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    if ('changedTouches' in e && e.changedTouches.length > 0) {
+      return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    }
+    return { 
+      x: (e as MouseEvent | React.MouseEvent).clientX, 
+      y: (e as MouseEvent | React.MouseEvent).clientY 
+    };
+  };
+
+  const handleSatChange = useCallback((e: InteractionEvent) => {
     if (!satRef.current) return;
+    
+    const { x: clientX, y: clientY } = getClientPos(e);
     const rect = satRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
     
     const newS = x * 100;
     const newV = 100 - (y * 100);
@@ -39,11 +62,13 @@ export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
     });
   }, [onChange]);
 
-  const handleHueChange = useCallback((e: MouseEvent | React.MouseEvent) => {
+  const handleHueChange = useCallback((e: InteractionEvent) => {
     if (!hueRef.current) return;
-    const rect = hueRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
     
+    const { x: clientX } = getClientPos(e);
+    const rect = hueRef.current.getBoundingClientRect();
+    
+    const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     const newH = x * 360;
     
     setHsv(prev => {
@@ -58,15 +83,30 @@ export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
       setIsDraggingSat(false);
       setIsDraggingHue(false);
     };
-    const handleMove = (e: MouseEvent) => {
-      if (isDraggingSat) handleSatChange(e);
-      if (isDraggingHue) handleHueChange(e);
+
+    const handleMove = (e: Event) => {
+      if (isDraggingSat) {
+        if (e.cancelable) e.preventDefault();
+        handleSatChange(e as unknown as InteractionEvent);
+      }
+      if (isDraggingHue) {
+        if (e.cancelable) e.preventDefault();
+        handleHueChange(e as unknown as InteractionEvent);
+      }
     };
-    window.addEventListener('mouseup', handleUp);
-    window.addEventListener('mousemove', handleMove);
+
+    if (isDraggingSat || isDraggingHue) {
+      window.addEventListener('mouseup', handleUp);
+      window.addEventListener('touchend', handleUp);
+      window.addEventListener('mousemove', handleMove, { passive: false });
+      window.addEventListener('touchmove', handleMove, { passive: false });
+    }
+
     return () => {
       window.removeEventListener('mouseup', handleUp);
+      window.removeEventListener('touchend', handleUp);
       window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('touchmove', handleMove);
     };
   }, [isDraggingSat, isDraggingHue, handleSatChange, handleHueChange]);
 
@@ -80,22 +120,37 @@ export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
 
   const handleEyedropper = async () => {
     if (!window.EyeDropper) return;
-    const eyeDropper = new window.EyeDropper();
+
+    const eyeDropper = new (window as any).EyeDropper();
     try {
+
       const result = await eyeDropper.open();
       onChange(result.sRGBHex);
     } catch (e) {
-      console.log(e);
+      console.log('Eyedropper canceled/failed', e);
     }
   };
 
   return (
-    <div className={styles.spectrumContainer}>
+    <div className={clsx(styles.spectrumContainer, className)} {...props}>
       <div 
         className={styles.saturationArea} 
         ref={satRef}
-        style={{ backgroundColor: `hsl(${hsv.h}, 100%, 50%)` }}
-        onMouseDown={(e) => { setIsDraggingSat(true); handleSatChange(e); }}
+        style={{ 
+          backgroundColor: `hsl(${hsv.h}, 100%, 50%)`,
+          touchAction: 'none',
+          userSelect: 'none'
+        }}
+        onMouseDown={(e) => { 
+
+          if (e.button !== 0) return;
+          setIsDraggingSat(true); 
+          handleSatChange(e); 
+        }}
+        onTouchStart={(e) => { 
+          setIsDraggingSat(true); 
+          handleSatChange(e); 
+        }}
       >
         <div className={styles.saturationWhite}>
           <div className={styles.saturationBlack} />
@@ -107,14 +162,31 @@ export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
       </div>
 
       <div className={styles.controlsRow}>
-        <button className={styles.eyeDropperBtn} onClick={handleEyedropper} title="Conta-gotas">
+        <button 
+          type="button"
+          className={styles.eyeDropperBtn} 
+          onClick={handleEyedropper} 
+          title="Conta-gotas"
+        >
           <Pipette size={14} />
         </button>
         <div className={styles.slidersCol}>
           <div 
             className={styles.hueSlider} 
             ref={hueRef}
-            onMouseDown={(e) => { setIsDraggingHue(true); handleHueChange(e); }}
+            style={{ 
+              touchAction: 'none',
+              userSelect: 'none'
+            }}
+            onMouseDown={(e) => { 
+              if (e.button !== 0) return;
+              setIsDraggingHue(true); 
+              handleHueChange(e); 
+            }}
+            onTouchStart={(e) => { 
+              setIsDraggingHue(true); 
+              handleHueChange(e); 
+            }}
           >
             <div 
               className={styles.sliderThumb} 
@@ -126,30 +198,17 @@ export function CustomSpectrum({ color, onChange }: CustomSpectrumProps) {
       </div>
 
       <div className={styles.inputsRow}>
-        <div className={styles.inputGroup}>
-          <input 
-            value={rgb.r} 
-            onChange={e => handleRgbChange('r', e.target.value)}
-            className={styles.numInput} 
-          />
-          <label>R</label>
-        </div>
-        <div className={styles.inputGroup}>
-          <input 
-            value={rgb.g} 
-            onChange={e => handleRgbChange('g', e.target.value)}
-            className={styles.numInput} 
-          />
-          <label>G</label>
-        </div>
-        <div className={styles.inputGroup}>
-          <input 
-            value={rgb.b} 
-            onChange={e => handleRgbChange('b', e.target.value)}
-            className={styles.numInput} 
-          />
-          <label>B</label>
-        </div>
+        {['r', 'g', 'b'].map((key) => (
+          <div key={key} className={styles.inputGroup}>
+            <input 
+              value={rgb[key as keyof typeof rgb]} 
+              onChange={e => handleRgbChange(key as 'r'|'g'|'b', e.target.value)}
+              className={styles.numInput} 
+              maxLength={3}
+            />
+            <label>{key.toUpperCase()}</label>
+          </div>
+        ))}
       </div>
     </div>
   );

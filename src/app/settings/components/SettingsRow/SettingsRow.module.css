@@ -3,75 +3,70 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background: white;
+  padding: 16px;
+  background: #FFFFFF;
   border: none;
-  border-bottom: 1px solid #e5e5ea;
   cursor: pointer;
   transition: background-color 0.2s;
-}
-
-.row:last-child {
-  border-bottom: none;
+  position: relative;
 }
 
 .row:active {
-  background-color: #f2f2f7;
+  background-color: #F2F2F7;
+}
+
+.row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 56px; 
+  right: 0;
+  height: 1px;
+  background-color: #E5E5EA;
 }
 
 .left {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
 }
 
 .iconBox {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background-color: #007aff;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-
-:global(.lucide-log-out) + .iconBox,
-button:has(:global(.lucide-log-out)) .iconBox {
-  background-color: #ff3b30;
-}
-
-button:has(:global(.lucide-bell)) .iconBox {
-  background-color: #ff9500;
-}
-
-button:has(:global(.lucide-shield)) .iconBox {
-  background-color: #34c759;
-}
-
-.label {
-  font-size: 1rem;
-  color: #1c1c1e;
-  font-weight: 400;
+  color: #007AFF;
 }
 
 .dangerLabel {
-  font-size: 1rem;
-  color: #ff3b30;
+  color: #FF3B30;
+  font-size: 15px;
   font-weight: 500;
+}
+
+.dangerIcon {
+  color: #FF3B30;
+}
+
+.label {
+  font-size: 15px;
+  color: #000000;
+  font-weight: 400;
 }
 
 .right {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .value {
-  color: #8e8e93;
-  font-size: 0.95rem;
+  color: #8E8E93;
+  font-size: 15px;
 }
 
 .arrow {
-  color: #c7c7cc;
+  color: #C7C7CC;
 }

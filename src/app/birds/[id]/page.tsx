@@ -22,9 +22,12 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const { id } = use(params);
   const router = useRouter();
   
+  // Hook singular (manipula a ave atual)
   const { 
     bird, 
     loading, 
+    updateBird,     // Usaremos este para update
+    deleteBird,     // Usaremos este para delete (não pede ID)
     updateStatus, 
     addLog, 
     updateLog, 
@@ -34,7 +37,9 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
     updateParent 
   } = useBird(id);
 
-  const { birds: allBirds, updateBird, deleteBird } = useBirds();
+  // Hook plural (apenas para buscar lista de parentes/outras aves)
+  // Removido updateBird e deleteBird daqui para evitar conflito de nomes
+  const { birds: allBirds } = useBirds();
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [activeLogType, setActiveLogType] = useState<LogType>('SAUDE');
@@ -69,19 +74,17 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
     setIsEditModalOpen(true);
   };
 
-  const handleSaveBird = async (updatedBird: Bird) => {
-    if (updateBird) {
-      await updateBird(updatedBird);
-      setIsEditModalOpen(false);
-    }
+  const handleSaveBird = async (updatedData: Bird) => {
+    // updateBird do useBird aceita Partial<Bird>, funciona corretamente
+    await updateBird(updatedData);
+    setIsEditModalOpen(false);
   };
 
   const handleDeleteBird = () => {
     requestConfirm('Excluir Ave?', 'A ave e todo seu histórico serão removidos permanentemente.', async () => {
-      if (deleteBird) {
-        await deleteBird(bird.id);
-        router.replace('/birds');
-      }
+      // deleteBird do useBird não recebe argumentos
+      await deleteBird();
+      router.replace('/birds');
     });
   };
 
@@ -122,6 +125,7 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const handleSelectParent = async (sid: string) => { await updateParent(parentSelectorType, sid); setIsParentSelectorOpen(false); };
   const handleDeleteParent = (type: 'PAI' | 'MAE') => { requestConfirm('Remover?', 'Desvincular?', () => updateParent(type, undefined)); };
 
+  // Usar os IDs da ave atual para encontrar os objetos completos na lista geral
   const father = allBirds.find(b => b.id === bird.fatherId);
   const mother = allBirds.find(b => b.id === bird.motherId);
   
@@ -250,7 +254,15 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
       
       <AddBirdModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveBird} initialData={bird} />
 
-      <ConfirmModal isOpen={confirmConfig.isOpen} title={confirmConfig.title} message={confirmConfig.message} onConfirm={confirmConfig.onConfirm} onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))} confirmLabel="Confirmar" isDanger={true} />
+      <ConfirmModal 
+        isOpen={confirmConfig.isOpen} 
+        title={confirmConfig.title} 
+        message={confirmConfig.message} 
+        onConfirm={confirmConfig.onConfirm} 
+        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))} 
+        confirmLabel="Confirmar" 
+        isDanger={true} 
+      />
     </div>
   );
 }

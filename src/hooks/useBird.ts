@@ -9,6 +9,7 @@ export function useBird(id: string) {
   const supabase = createClient();
 
   const fetchBird = useCallback(async () => {
+    if (!id) return;
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -24,15 +25,15 @@ export function useBird(id: string) {
       if (error) throw error;
       setBird(mapBirdFromDB(data));
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao buscar ave:", error);
     } finally {
       setLoading(false);
     }
   }, [id]);
 
   useEffect(() => {
-    if (id) fetchBird();
-  }, [id, fetchBird]);
+    fetchBird();
+  }, [fetchBird]);
 
   const updateBird = async (updatedData: Partial<Bird>) => {
     if (!bird) return;
@@ -70,7 +71,7 @@ export function useBird(id: string) {
 
       setBird(mapBirdFromDB(data));
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao atualizar ave:", error);
       throw error;
     }
   };
@@ -84,7 +85,7 @@ export function useBird(id: string) {
 
       if (error) throw error;
     } catch (error) {
-      console.error(error);
+      console.error("Erro ao deletar ave:", error);
       throw error;
     }
   };
@@ -97,8 +98,12 @@ export function useBird(id: string) {
     const { data, error } = await supabase
       .from('bird_logs')
       .insert([{ 
-        ...log, 
-        bird_id: id 
+        bird_id: id,
+        type: log.type,
+        title: log.title,
+        notes: log.notes,
+        date: log.date,
+        icon: log.icon
       }])
       .select()
       .single();
@@ -111,7 +116,12 @@ export function useBird(id: string) {
   const updateLog = async (log: BirdLog) => {
     const { data, error } = await supabase
       .from('bird_logs')
-      .update({ title: log.title, notes: log.notes, date: log.date, icon: log.icon })
+      .update({ 
+        title: log.title, 
+        notes: log.notes, 
+        date: log.date, 
+        icon: log.icon 
+      })
       .eq('id', log.id)
       .select()
       .single();
@@ -130,28 +140,77 @@ export function useBird(id: string) {
     setBird(prev => prev ? { ...prev, logs: prev.logs.filter(l => l.id !== logId) } : null);
   };
 
-  const saveWeight = async (weight: Omit<BirdWeight, 'id'> | BirdWeight) => {
-    const isEdit = 'id' in weight;
-    const payload = isEdit 
-      ? { weight: weight.weight, height: weight.height, date: weight.date } 
-      : { ...weight, bird_id: id };
-    
-    const query = supabase.from('bird_weights');
+  // Função auxiliar robusta para converter qualquer entrada em número
+  const parseNumber = (value: string | number | undefined | null): number | null => {
+    if (value === undefined || value === null || value === '') return null;
+    if (typeof value === 'number') return value;
+    // Substitui vírgula por ponto e remove qualquer caractere não numérico exceto ponto e sinal
+    const cleanValue = value.toString().replace(',', '.').replace(/[^0-9.-]/g, '');
+    const parsed = parseFloat(cleanValue);
+    return isNaN(parsed) ? null : parsed;
+  };
 
-    const { data, error } = await (isEdit 
-      ? query.update(payload).eq('id', (weight as BirdWeight).id)
-      : query.insert([payload])
-    ).select().single();
+  const saveWeight = async (weightData: Partial<BirdWeight>) => {
+    try {
+      const weightId = weightData.id;
+      const isEdit = !!weightId;
+      
+      // Tratamento de Peso e Altura
+      const weightVal = parseNumber(weightData.weight);
+      const heightVal = parseNumber(weightData.height);
 
-    if (!error && data) {
-      const newWeight = mapWeightFromDB(data);
-      setBird(prev => {
-        if (!prev) return null;
-        const list = isEdit 
-          ? prev.weights.map(w => w.id === newWeight.id ? newWeight : w)
-          : [newWeight, ...prev.weights];
-        return { ...prev, weights: list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) };
-      });
+      if (weightVal === null) {
+        throw new Error("O valor do peso é obrigatório.");
+      }
+
+      // Tratamento de Data seguro
+      let dateVal = new Date().toISOString();
+      if (weightData.date) {
+        const d = new Date(weightData.date);
+        if (!isNaN(d.getTime())) {
+          dateVal = d.toISOString();
+        }
+      }
+
+      const payload = {
+        weight: weightVal,
+        height: heightVal,
+        date: dateVal,
+        // Só adiciona bird_id se for inserção (nova pesagem)
+        ...(isEdit ? {} : { bird_id: id })
+      };
+      
+      console.log("Enviando peso:", payload); // Log para debug
+
+      const query = supabase.from('bird_weights');
+
+      const { data, error } = await (isEdit 
+        ? query.update(payload).eq('id', weightId).select().single()
+        : query.insert([payload]).select().single()
+      );
+
+      if (error) {
+        console.error("Erro Supabase:", error);
+        throw error;
+      }
+
+      if (data) {
+        const newWeight = mapWeightFromDB(data);
+        setBird(prev => {
+          if (!prev) return null;
+          const list = isEdit 
+            ? prev.weights.map(w => w.id === newWeight.id ? newWeight : w)
+            : [newWeight, ...prev.weights];
+          
+          return { 
+            ...prev, 
+            weights: list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) 
+          };
+        });
+      }
+    } catch (e) {
+      console.error("Erro ao salvar peso (função):", e);
+      throw e;
     }
   };
 

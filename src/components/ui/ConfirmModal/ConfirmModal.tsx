@@ -1,52 +1,51 @@
 'use client';
 
-import React from 'react';
-import clsx from 'clsx';
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import styles from './ConfirmModal.module.css';
+import clsx from 'clsx';
 
-interface ConfirmModalProps {
+export interface ConfirmModalProps {
   isOpen: boolean;
   title: string;
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: 'danger' | 'info';
+  confirmLabel?: string;
+  cancelLabel?: string;
+  isDanger?: boolean;
 }
 
-export function ConfirmModal({
-  isOpen,
-  title,
-  message,
-  onConfirm,
+export function ConfirmModal({ 
+  isOpen, 
+  title, 
+  message, 
+  onConfirm, 
   onCancel,
-  confirmText = 'Confirmar',
-  cancelText = 'Cancelar',
-  variant = 'info'
+  confirmLabel = 'Confirmar',
+  cancelLabel = 'Cancelar',
+  isDanger = true
 }: ConfirmModalProps) {
   if (!isOpen) return null;
 
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <div className={clsx(styles.iconWrapper, variant === 'danger' && styles.dangerIcon)}>
-          {variant === 'danger' ? <AlertTriangle size={32} /> : <Info size={32} />}
+        <div className={styles.iconWrapper}>
+          <AlertTriangle size={32} className={styles.icon} />
         </div>
         
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.message}>{message}</p>
-        
+
         <div className={styles.actions}>
           <button className={styles.cancelBtn} onClick={onCancel}>
-            {cancelText}
+            {cancelLabel}
           </button>
           <button 
-            className={clsx(styles.confirmBtn, variant === 'danger' && styles.dangerBtn)} 
+            className={clsx(styles.confirmBtn, isDanger && styles.dangerBtn)} 
             onClick={onConfirm}
           >
-            {confirmText}
+            {confirmLabel}
           </button>
         </div>
       </div>

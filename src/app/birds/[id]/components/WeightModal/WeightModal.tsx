@@ -34,12 +34,18 @@ export function WeightModal({ isOpen, onClose, initialData, onSave }: WeightModa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const cleanWeight = weight.replace(',', '.');
+    const cleanHeight = height.replace(',', '.');
+    const payloadId = initialData?.id || ''; 
+
     onSave({
-      id: initialData?.id || Math.random().toString(),
+      id: payloadId, 
       date,
-      weight: Number(weight),
-      height: height ? Number(height) : undefined
+      weight: Number(cleanWeight),
+      height: cleanHeight ? Number(cleanHeight) : undefined
     });
+    
     onClose();
   };
 
@@ -62,22 +68,30 @@ export function WeightModal({ isOpen, onClose, initialData, onSave }: WeightModa
           <div className={styles.field}>
             <label className={styles.label}>Peso (g)</label>
             <input 
-              type="number"
+              type="text" 
+              inputMode="decimal"
               required
               className={styles.input}
-              placeholder="Ex: 50"
+              placeholder="Ex: 50.5"
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[\d.,]*$/.test(val)) setWeight(val);
+              }}
             />
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Tamanho (cm)</label>
             <input 
-              type="number"
+              type="text"
+              inputMode="decimal"
               className={styles.input}
               placeholder="Ex: 15"
               value={height}
-              onChange={(e) => setHeight(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[\d.,]*$/.test(val)) setHeight(val);
+              }}
             />
           </div>
         </div>

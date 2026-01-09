@@ -1,5 +1,6 @@
 import { ChevronRight } from 'lucide-react';
 import styles from './SettingsRow.module.css';
+import clsx from 'clsx';
 
 interface SettingsRowProps {
   icon: React.ReactNode;
@@ -13,7 +14,9 @@ export function SettingsRow({ icon, label, value, onClick, isDanger }: SettingsR
   return (
     <button className={styles.row} onClick={onClick}>
       <div className={styles.left}>
-        <div className={styles.iconBox}>{icon}</div>
+        <div className={clsx(styles.iconBox, isDanger && styles.dangerIcon)}>
+          {icon}
+        </div>
         <span className={isDanger ? styles.dangerLabel : styles.label}>{label}</span>
       </div>
       <div className={styles.right}>
