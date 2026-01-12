@@ -3,6 +3,7 @@ import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/layout/BottomNav/BottomNav";
 import { UIProvider } from "@/contexts/UIContext";
+import { SWRProvider } from "@/lib/swr-provider";
 import clsx from "clsx";
 
 const inter = Inter({ 
@@ -41,10 +42,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={clsx(inter.variable, lexend.variable)}>
-        <UIProvider>
-          {children}
-          <BottomNav />
-        </UIProvider>
+        <SWRProvider>
+          <UIProvider>
+            {children}
+            <BottomNav />
+          </UIProvider>
+        </SWRProvider>
       </body>
     </html>
   );

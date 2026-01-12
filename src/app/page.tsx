@@ -7,6 +7,7 @@ import { useFinance } from '@/hooks/useFinance';
 import { useProfile } from '@/hooks/useProfile';
 import { useRouter } from 'next/navigation';
 import { PdfGeneratorModal } from '@/components/features/PdfGeneratorModal/PdfGeneratorModal';
+import { CompetitionModal } from '@/components/features/CompetitionModal/CompetitionModal';
 import { 
   Bird, 
   Users, 
@@ -15,19 +16,19 @@ import {
   Plus, 
   TrendingUp, 
   FileText,
-  Trophy,
-  ArrowRight
+  Trophy
 } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function HomePage() {
   const { stats, isLoading: dashboardLoading } = useDashboard();
   const { transactions, isLoading: financeLoading } = useFinance();
-  const { profile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
   const router = useRouter();
   
   const [greeting, setGreeting] = useState('');
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isCompetitionModalOpen, setIsCompetitionModalOpen] = useState(false);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -44,14 +45,14 @@ export default function HomePage() {
     return acc - (Number(curr.amount) || 0);
   }, 0);
 
-  const isLoading = dashboardLoading || financeLoading;
+  const isLoading = dashboardLoading || financeLoading || profileLoading;
 
   return (
     <div className={styles.container}>
 
       <header className={styles.header}>
         <span className={styles.welcomeText}>
-          {greeting}, {profile?.name?.split(' ')[0] || 'Criador'} 👋
+          {isLoading ? 'Carregando...' : `${greeting}, ${profile?.name?.split(' ')[0] || 'Criador'} 👋`}
         </span>
         <h1 className={styles.title}>Painel de Controle</h1>
       </header>
@@ -125,7 +126,6 @@ export default function HomePage() {
             <span className={styles.actionTitle}>Cadastrar<br/>Ave</span>
           </button>
 
-          {/* Nova Transação */}
           <button 
             className={styles.actionCard}
             onClick={() => router.push('/finance?action=new')}
@@ -158,7 +158,7 @@ export default function HomePage() {
 
           <button 
             className={clsx(styles.actionCard, styles.competitionCard)}
-            onClick={() => router.push('/birds')}
+            onClick={() => setIsCompetitionModalOpen(true)}
           >
             <div className={styles.competitionContent}>
               <span className={styles.competitionTitle}>Modo Competição</span>
@@ -174,6 +174,11 @@ export default function HomePage() {
       <PdfGeneratorModal 
         isOpen={isPdfModalOpen}
         onClose={() => setIsPdfModalOpen(false)}
+      />
+
+      <CompetitionModal
+        isOpen={isCompetitionModalOpen}
+        onClose={() => setIsCompetitionModalOpen(false)}
       />
     </div>
   );

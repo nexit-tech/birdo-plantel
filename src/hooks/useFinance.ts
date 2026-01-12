@@ -3,12 +3,20 @@ import { createClient } from '@/lib/supabase/client';
 import { mapTransactionFromDB } from '@/utils/mappers';
 import { Transaction } from '@/types';
 
+let cachedTransactions: Transaction[] | null = null;
+
 export function useFinance() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [transactions, setTransactions] = useState<Transaction[]>(cachedTransactions || []);
+  const [isLoading, setIsLoading] = useState(!cachedTransactions);
   const supabase = createClient();
 
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = useCallback(async (forceReload = false) => {
+    if (cachedTransactions && !forceReload) {
+      setTransactions(cachedTransactions);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -17,7 +25,10 @@ export function useFinance() {
         .order('date', { ascending: false });
 
       if (error) throw error;
-      setTransactions((data || []).map(mapTransactionFromDB));
+      
+      const mappedData = (data || []).map(mapTransactionFromDB);
+      cachedTransactions = mappedData;
+      setTransactions(mappedData);
     } catch (error) {
       console.error(error);
     } finally {
@@ -47,7 +58,12 @@ export function useFinance() {
     if (error) throw error;
 
     const newTransaction = mapTransactionFromDB(data);
-    setTransactions(prev => [newTransaction, ...prev]);
+    
+    setTransactions(prev => {
+      const updated = [newTransaction, ...prev];
+      cachedTransactions = updated;
+      return updated;
+    });
   };
 
   const updateTransaction = async (transaction: Transaction) => {
@@ -69,9 +85,12 @@ export function useFinance() {
     if (error) throw error;
 
     const updatedTransaction = mapTransactionFromDB(data);
-    setTransactions(prev => 
-      prev.map(t => t.id === transaction.id ? updatedTransaction : t)
-    );
+
+    setTransactions(prev => {
+      const updated = prev.map(t => t.id === transaction.id ? updatedTransaction : t);
+      cachedTransactions = updated;
+      return updated;
+    });
   };
 
   const deleteTransaction = async (id: string) => {
@@ -82,11 +101,19 @@ export function useFinance() {
 
     if (error) throw error;
 
-    setTransactions(prev => prev.filter(t => t.id !== id));
+    setTransactions(prev => {
+      const updated = prev.filter(t => t.id !== id);
+      cachedTransactions = updated;
+      return updated;
+    });
   };
 
   useEffect(() => {
-    fetchTransactions();
+    if (!cachedTransactions) {
+      fetchTransactions();
+    } else {
+      setIsLoading(false);
+    }
   }, [fetchTransactions]);
 
   return {
@@ -95,6 +122,6 @@ export function useFinance() {
     addTransaction,
     updateTransaction,
     deleteTransaction,
-    refetch: fetchTransactions
+    refetch: () => fetchTransactions(true)
   };
 }

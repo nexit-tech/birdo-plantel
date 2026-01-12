@@ -1,17 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
+interface DashboardStats {
+  totalBirds: number;
+  totalPairs: number;
+  activeChicks: number;
+  availableForSale: number;
+}
+
+let cachedData: DashboardStats | null = null;
+
 export function useDashboard() {
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>(cachedData || {
     totalBirds: 0,
     totalPairs: 0,
     activeChicks: 0,
     availableForSale: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const [isLoading, setIsLoading] = useState(!cachedData);
   const supabase = createClient();
 
-  const fetchStats = useCallback(async () => {
+  const fetchStats = useCallback(async (forceReload = false) => {
+    if (cachedData && !forceReload) {
+      setStats(cachedData);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
 
@@ -37,12 +53,15 @@ export function useDashboard() {
 
       const chicksCount = cycles?.reduce((acc, curr) => acc + (curr.hatched_count || 0), 0) || 0;
 
-      setStats({
+      const newStats: DashboardStats = {
         totalBirds: birdsCount || 0,
         totalPairs: pairsCount || 0,
         availableForSale: availableCount || 0,
         activeChicks: chicksCount
-      });
+      };
+
+      cachedData = newStats;
+      setStats(newStats);
 
     } catch (error) {
       console.error(error);
@@ -52,8 +71,12 @@ export function useDashboard() {
   }, []);
 
   useEffect(() => {
-    fetchStats();
+    if (!cachedData) {
+      fetchStats();
+    } else {
+      setIsLoading(false);
+    }
   }, [fetchStats]);
 
-  return { stats, isLoading, refetch: fetchStats };
+  return { stats, isLoading, refetch: () => fetchStats(true) };
 }

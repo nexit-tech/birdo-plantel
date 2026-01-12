@@ -11,8 +11,23 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
   });
 };
 
-export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor: string, allBirds: Bird[]) => {
+export const generateCompetitionPDF = async (
+  bird: Bird, 
+  breeder: Breeder, 
+  allBirds: Bird[],
+  qrCodeDataUrl?: string
+) => {
   
+  const theme = {
+    bg: '#09090b',
+    card: '#18181b',
+    textMain: '#ffffff',
+    textSec: '#94a3b8',
+    accent: '#fbbf24',
+    line: '#fbbf24',
+    boxFill: '#27272a'
+  };
+
   const getBirdObj = (id?: string) => allBirds.find(b => b.id === id);
 
   const getBirdName = (id?: string) => {
@@ -38,7 +53,7 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
     try {
       breederLogo = await loadImage(breeder.photoUrl);
     } catch (error) {
-      console.error('Erro ao carregar logo', error);
+      console.error(error);
     }
   }
 
@@ -56,16 +71,16 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
   const rightW = (cardW * 0.55) - (colGap / 2);
   const rightX = margin + leftW + colGap;
 
-  doc.setFillColor(bgColor);
+  doc.setFillColor(theme.bg);
   doc.rect(margin, startY, cardW, cardH, 'F');
   
-  doc.setDrawColor(0, 0, 0);
+  doc.setDrawColor(theme.accent);
   doc.setLineWidth(0.8);
   doc.rect(margin, startY, cardW, cardH);
 
   doc.saveGraphicsState();
   // @ts-ignore
-  doc.setGState(new doc.GState({ opacity: 0.15 }));
+  doc.setGState(new doc.GState({ opacity: 0.10 }));
   
   const watermarkCX = rightX + (rightW / 2);
   const watermarkCY = startY + (cardH / 2);
@@ -74,7 +89,7 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
     const wSize = 60;
     doc.addImage(breederLogo, 'PNG', watermarkCX - (wSize/2), watermarkCY - (wSize/2), wSize, wSize);
   } else {
-    doc.setFillColor(0, 0, 0);
+    doc.setFillColor(theme.accent);
     doc.circle(watermarkCX, watermarkCY, 30, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(40);
@@ -86,15 +101,15 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
   const lx = margin + 2;
   const ly = contentStartY;
 
-  const drawWhiteBox = (x: number, y: number, w: number, h: number, radius: number = 1) => {
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(60, 60, 60);
+  const drawBox = (x: number, y: number, w: number, h: number, radius: number = 1) => {
+    doc.setFillColor(theme.boxFill);
+    doc.setDrawColor(theme.accent); 
     doc.setLineWidth(0.2);
     doc.roundedRect(x, y, w, h, radius, radius, 'FD');
   };
 
   const headerH = 22;
-  drawWhiteBox(lx, ly, leftW, headerH, 2);
+  drawBox(lx, ly, leftW, headerH, 2);
 
   const headerIconCX = lx + 11;
   const headerIconCY = ly + 11;
@@ -103,45 +118,48 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
     const hSize = 16;
     doc.addImage(breederLogo, 'PNG', headerIconCX - (hSize/2), headerIconCY - (hSize/2), hSize, hSize);
   } else {
-    doc.setFillColor(30, 30, 30);
+    doc.setFillColor(theme.bg);
     doc.circle(headerIconCX, headerIconCY, 8, 'F');
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(theme.accent);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text(initial, headerIconCX, headerIconCY + 3.5, { align: 'center' });
   }
 
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(theme.textMain);
   doc.setFontSize(7);
   doc.text('CRIATÓRIO', lx + 24, ly + 6);
   doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(theme.accent);
   doc.text(breeder.name ? breeder.name.toUpperCase() : 'CRIATÓRIO', lx + 24, ly + 11);
   doc.setFontSize(6);
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(theme.textSec);
   doc.text(`CTF: ${breeder.registryNumber || '-'} | ${breeder.city || '-'}`, lx + 24, ly + 16);
 
   const mainDataY = ly + headerH + 2;
   const mainDataH = 35;
-  drawWhiteBox(lx, mainDataY, leftW, mainDataH, 2);
+  drawBox(lx, mainDataY, leftW, mainDataH, 2);
 
   doc.setFontSize(12);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 120, 60); 
+  doc.setTextColor(theme.accent); 
   doc.text(bird.name.toUpperCase(), lx + (leftW / 2), mainDataY + 7, { align: 'center' });
 
-  doc.setDrawColor(200, 200, 200);
+  doc.setDrawColor(theme.accent);
   doc.setLineWidth(0.1);
   doc.line(lx + 5, mainDataY + 9, lx + leftW - 5, mainDataY + 9);
 
   const drawInfoRow = (label: string, value: string, y: number) => {
     doc.setFontSize(6);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(theme.textSec);
     doc.text(label, lx + 5, y);
     
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(theme.textMain);
     doc.text(value, lx + leftW - 5, y, { align: 'right' });
   };
 
@@ -158,78 +176,79 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
   const parentBoxH = 12;
   
   const drawParent = (role: string, name: string, ring: string, y: number) => {
-    drawWhiteBox(lx, y, leftW, parentBoxH, 1);
+    drawBox(lx, y, leftW, parentBoxH, 1);
     
-    doc.setFillColor(240, 240, 240);
+    doc.setFillColor(theme.bg);
     doc.rect(lx + 0.2, y + 0.2, 14, parentBoxH - 0.4, 'F');
     
     doc.setFontSize(6);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
+    doc.setTextColor(theme.accent);
     doc.text(role, lx + 7, y + 7, { align: 'center' });
     
     doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(theme.textMain);
     doc.text(name, lx + 18, y + 5);
     
     doc.setFontSize(6);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(theme.textSec);
     doc.text(`Anilha: ${ring}`, lx + 18, y + 9);
   };
 
   drawParent('PAI', getBirdName(bird.fatherId), getBirdRing(bird.fatherId), parentsY);
   drawParent('MÃE', getBirdName(bird.motherId), getBirdRing(bird.motherId), parentsY + parentBoxH + 2);
 
-  const footerTextY = parentsY + (parentBoxH * 2) + 8;
-  doc.setFontSize(6);
-  doc.setTextColor(80, 80, 80);
-  doc.text('Documento gerado digitalmente pelo sistema Birdo.', lx + (leftW/2), footerTextY, { align: 'center' });
+  if (qrCodeDataUrl) {
+    const qrSize = 22; 
+    const qrY = parentsY + (parentBoxH * 2) + 2; 
+    const qrX = lx + (leftW / 2) - (qrSize / 2);
+    
+    try {
+      doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+      
+      doc.setFontSize(5);
+      doc.setTextColor(theme.accent);
+      doc.text('PERFIL PÚBLICO', lx + (leftW / 2), qrY + qrSize + 2, { align: 'center' });
+    } catch (e) {
+      console.error(e);
+    }
+  }
 
   const ry = contentStartY;
   const rw = rightW;
 
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(0, 0, 0);
+  doc.setTextColor(theme.textMain);
   doc.text('ÁRVORE GENEALÓGICA', rightX + (rw/2), ry + 3, { align: 'center' });
 
   const treeStartY = ry + 6;
   const gen2W = 38; 
   const gen3W = 42; 
-  const genGap = (rw - gen2W - gen3W) / 2;
   const gen2X = rightX + 2;
   const gen3X = rightX + gen2W + 8; 
 
   const boxH = 9;
   const boxGap = 2;
-  
-  const totalTreeH = (boxH * 8) + (boxGap * 7); 
+
   const startTreeY = treeStartY + 2;
-
-  const father = getBirdObj(bird.fatherId);
-  const mother = getBirdObj(bird.motherId);
   
-  const patGrandFather = getBirdObj(father?.fatherId);
-  const patGrandMother = getBirdObj(father?.motherId);
-  const matGrandFather = getBirdObj(mother?.fatherId);
-  const matGrandMother = getBirdObj(mother?.motherId);
-
   const drawGenBox = (name: string, ring: string, x: number, y: number, w: number) => {
-    drawWhiteBox(x, y, w, boxH, 0.5);
+    drawBox(x, y, w, boxH, 0.5);
     doc.setFontSize(6.5);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
+    doc.setTextColor(theme.textMain);
     doc.text(name.substring(0, 18), x + 2, y + 3.5);
     
     doc.setFontSize(5);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(80, 80, 80);
+    doc.setTextColor(theme.textSec);
     doc.text(ring, x + 2, y + 7);
   };
 
   const drawConnector = (x1: number, y1: number, x2: number, y2: number) => {
-    doc.setDrawColor(100, 100, 100);
+    doc.setDrawColor(theme.textSec);
     doc.setLineWidth(0.3);
     doc.line(x1, y1, x1 + 4, y1); 
     doc.line(x1 + 4, y1, x1 + 4, y2); 
@@ -273,9 +292,17 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
 
   doc.setFontSize(6);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(80, 80, 80);
+  doc.setTextColor(theme.textSec);
   doc.text('PATERNOS', rightX + 2, startTreeY - 1.5);
   doc.text('BISAVÓS', gen3X, startTreeY - 1.5);
+
+  const father = getBirdObj(bird.fatherId);
+  const mother = getBirdObj(bird.motherId);
+  
+  const patGrandFather = getBirdObj(father?.fatherId);
+  const patGrandMother = getBirdObj(father?.motherId);
+  const matGrandFather = getBirdObj(mother?.fatherId);
+  const matGrandMother = getBirdObj(mother?.motherId);
 
   drawFamilyGroup(
     getBirdName(father?.fatherId), getBirdRing(father?.fatherId),
@@ -298,5 +325,5 @@ export const generatePedigreePDF = async (bird: Bird, breeder: Breeder, bgColor:
     getBirdName(matGrandMother?.motherId), getBirdRing(matGrandMother?.motherId),
   );
 
-  doc.save(`Ficha_${bird.name}.pdf`);
+  doc.save(`Ficha_COMPETICAO_${bird.name}.pdf`);
 };

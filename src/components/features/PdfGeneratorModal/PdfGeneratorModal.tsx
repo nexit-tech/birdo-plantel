@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Search, FileText, Download, Loader2 } from 'lucide-react';
 import { Bird } from '@/types';
-import { generatePedigreePDF } from '@/utils/pdfGenerator';
+// Atualize este import
+import { generateStandardPDF } from '@/utils/pdf/standard/generateStandardPDF';
 import { ColorPicker } from '@/components/ui/ColorPicker/ColorPicker';
 import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
 import { useBirds, useProfile } from '@/hooks';
@@ -39,7 +40,7 @@ export function PdfGeneratorModal({ isOpen, onClose }: PdfGeneratorModalProps) {
     if (selectedBird && profile) {
       setIsGenerating(true);
       try {
-        await generatePedigreePDF(selectedBird, profile, bgColor, birds);
+        await generateStandardPDF(selectedBird, profile, bgColor, birds);
       } catch (error) {
         console.error(error);
       } finally {

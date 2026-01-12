@@ -1,35 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
+import useSWR from 'swr';
 import { createClient } from '@/lib/supabase/client';
 import { mapBirdFromDB } from '@/utils/mappers';
 import { Bird } from '@/types';
 
 export function useBirds() {
-  const [birds, setBirds] = useState<Bird[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  const fetchBirds = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      // Alterado para buscar relacionamentos usando alias para bater com o mapper
-      const { data, error } = await supabase
-        .from('birds')
-        .select('*, logs:bird_logs(*), weights:bird_weights(*)')
-        .order('created_at', { ascending: false });
+  const fetcher = async () => {
+    const { data, error } = await supabase
+      .from('birds')
+      .select('*, logs:bird_logs(*), weights:bird_weights(*)')
+      .order('created_at', { ascending: false });
 
-      if (error) throw error;
+    if (error) throw error;
 
-      // O typecast 'any' ajuda aqui pois o retorno do join do Supabase é dinâmico
-      // e o mapper fará a validação/conversão correta
-      const formattedBirds = (data || []).map((item: any) => mapBirdFromDB(item));
-      setBirds(formattedBirds);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao buscar pássaros');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    return (data || []).map((item: any) => mapBirdFromDB(item));
+  };
+
+  const { data: birds = [], error, isLoading, mutate } = useSWR('birds', fetcher);
 
   const createBird = async (bird: Omit<Bird, 'id' | 'logs' | 'weights'>) => {
     try {
@@ -61,7 +49,8 @@ export function useBirds() {
       if (error) throw error;
 
       const newBird = mapBirdFromDB(data);
-      setBirds(prev => [newBird, ...prev]);
+      
+      await mutate([newBird, ...birds], { revalidate: false });
       return newBird;
     } catch (err) {
       throw err;
@@ -95,7 +84,11 @@ export function useBirds() {
       if (error) throw error;
 
       const updated = mapBirdFromDB(data);
-      setBirds(prev => prev.map(b => b.id === bird.id ? updated : b));
+      
+      await mutate(
+        birds.map(b => b.id === bird.id ? updated : b),
+        { revalidate: false }
+      );
       return updated;
     } catch (err) {
       throw err;
@@ -111,21 +104,20 @@ export function useBirds() {
 
       if (error) throw error;
 
-      setBirds(prev => prev.filter(b => b.id !== id));
+      await mutate(
+        birds.filter(b => b.id !== id),
+        { revalidate: false }
+      );
     } catch (err) {
       throw err;
     }
   };
 
-  useEffect(() => {
-    fetchBirds();
-  }, [fetchBirds]);
-
   return {
     birds,
     isLoading,
-    error,
-    refetch: fetchBirds,
+    error: error ? (error instanceof Error ? error.message : 'Erro ao carregar dados') : null,
+    refetch: () => mutate(),
     createBird,
     updateBird, 
     deleteBird  
