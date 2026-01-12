@@ -42,7 +42,7 @@ export function BottomNav() {
     return () => observer.disconnect();
   }, []);
 
-  if (!isMounted || pathname === '/login') {
+  if (!isMounted || pathname === '/login' || pathname.startsWith('/share')) {
     return null;
   }
 

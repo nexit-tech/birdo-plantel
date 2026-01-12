@@ -1,204 +1,186 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import styles from './ShareModal.module.css';
+import { useState, useEffect } from 'react';
 import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
+import { createClient } from '@/lib/supabase/client';
+import { Copy, Check, Share2, Trophy, Dna, Image as ImageIcon } from 'lucide-react';
+import styles from './ShareModal.module.css';
+import clsx from 'clsx';
 import { ShareSettings } from '@/types';
-import { 
-  Globe, 
-  Lock, 
-  Copy, 
-  Check, 
-  Link as LinkIcon,
-  Dna, 
-  Trophy, 
-  Activity, 
-  Egg
-} from 'lucide-react';
 
 interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isPublic: boolean;
-  shareSettings?: ShareSettings;
-  onTogglePrivacy: (status: boolean) => Promise<boolean | void>;
-  onUpdateSettings: (settings: ShareSettings) => Promise<boolean | void>;
   birdId: string;
+  initialIsPublic?: boolean;
+  initialSettings?: ShareSettings;
+  birdName: string;
 }
 
 export function ShareModal({ 
   isOpen, 
   onClose, 
-  isPublic, 
-  shareSettings, 
-  onTogglePrivacy,
-  onUpdateSettings,
-  birdId
+  birdId, 
+  initialIsPublic = false,
+  initialSettings 
 }: ShareModalProps) {
-  
-  const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [localSettings, setLocalSettings] = useState<ShareSettings>({
+  const supabase = createClient();
+  const [isPublic, setIsPublic] = useState(initialIsPublic);
+  const [settings, setSettings] = useState<ShareSettings>(initialSettings || {
     showGenealogy: true,
     showCompetitions: true,
     showHealth: false,
     showReproduction: false,
     showPhotos: true
   });
-
-  const publicLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/share/${birdId}`
-    : '';
+  const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
 
   useEffect(() => {
-    if (shareSettings) {
-      setLocalSettings(shareSettings);
+    if (typeof window !== 'undefined') {
+      setShareUrl(`${window.location.origin}/share/${birdId}`);
     }
-  }, [shareSettings]);
+  }, [birdId]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(publicLink);
+  useEffect(() => {
+    if (isOpen) {
+      fetchStatus();
+    }
+  }, [isOpen, birdId]);
+
+  const fetchStatus = async () => {
+    const { data, error } = await supabase
+      .from('birds')
+      .select('is_public, share_settings')
+      .eq('id', birdId)
+      .single();
+
+    if (data && !error) {
+      setIsPublic(data.is_public);
+      if (data.share_settings) {
+        setSettings(data.share_settings as ShareSettings);
+      }
+    }
+  };
+
+  const handleTogglePublic = async (newValue: boolean) => {
+    setIsPublic(newValue);
+    await supabase
+      .from('birds')
+      .update({ is_public: newValue })
+      .eq('id', birdId);
+  };
+
+  const handleToggleSetting = async (key: keyof ShareSettings) => {
+    const newSettings = { ...settings, [key]: !settings[key] };
+    setSettings(newSettings);
+    
+    await supabase
+      .from('birds')
+      .update({ share_settings: newSettings })
+      .eq('id', birdId);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleTogglePrivacy = async () => {
-    setLoading(true);
-    await onTogglePrivacy(!isPublic);
-    setLoading(false);
-  };
-
-  const handleToggleSetting = async (key: keyof ShareSettings) => {
-    const newSettings = { ...localSettings, [key]: !localSettings[key] };
-    setLocalSettings(newSettings);
-    await onUpdateSettings(newSettings);
-  };
-
   return (
-    <SheetModal isOpen={isOpen} onClose={onClose} title="Compartilhar Ficha">
+    <SheetModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Compartilhar Ave"
+    >
       <div className={styles.container}>
         
-        <div className={`${styles.statusCard} ${isPublic ? styles.active : ''}`}>
-          <div className={styles.statusIcon}>
-            {isPublic ? <Globe size={28} /> : <Lock size={28} />}
+        <div className={styles.mainToggle}>
+          <div className={styles.toggleInfo}>
+            <div className={styles.iconBg}>
+              <Share2 size={24} color="#007AFF" />
+            </div>
+            <div className={styles.toggleText}>
+              <span className={styles.toggleLabel}>Acesso Público</span>
+              <span className={styles.toggleDesc}>
+                {isPublic ? 'Link ativo e visível para todos' : 'Ninguém pode visualizar esta ave'}
+              </span>
+            </div>
           </div>
-          <div>
-            <h3 className={styles.statusTitle}>
-              {isPublic ? 'Visualização Pública Ativa' : 'Ficha Privada'}
-            </h3>
-            <p className={styles.statusDesc}>
-              {isPublic 
-                ? 'A ficha desta ave pode ser acessada por qualquer pessoa com o link.' 
-                : 'Apenas você tem acesso aos dados desta ave.'}
-            </p>
-          </div>
+          <label className={styles.switch}>
+            <input 
+              type="checkbox" 
+              checked={isPublic}
+              onChange={(e) => handleTogglePublic(e.target.checked)}
+            />
+            <span className={styles.slider}></span>
+          </label>
         </div>
 
-        {isPublic && (
-          <div className={styles.linkSection}>
-            <div className={styles.linkInputWrapper}>
-              <LinkIcon size={16} className={styles.linkIcon} />
-              <input 
-                readOnly 
-                value={publicLink} 
-                className={styles.linkInput}
-                onClick={(e) => e.currentTarget.select()} 
-              />
-            </div>
-            <button onClick={handleCopy} className={styles.copyButton}>
-              {copied ? <Check size={18} /> : <Copy size={18} />}
-              {copied ? 'Copiado' : 'Copiar'}
-            </button>
+        <div className={clsx(styles.linkWrapper, !isPublic && styles.disabledLink)}>
+          <div className={styles.urlBox}>
+            <span className={styles.urlText}>{shareUrl}</span>
           </div>
-        )}
+          <button 
+            className={clsx(styles.copyButton, copied && styles.copied)} 
+            onClick={isPublic ? copyToClipboard : undefined}
+            disabled={!isPublic}
+          >
+            {copied ? <Check size={20} /> : <Copy size={20} />}
+          </button>
+        </div>
+
+        <div className={styles.divider} />
 
         <div className={styles.settingsSection}>
-          <span className={styles.sectionTitle}>Dados Visíveis</span>
+          <h3 className={styles.sectionTitle}>Visibilidade dos Dados</h3>
           
-          <div className={styles.toggleList}>
-            
-            <div className={`${styles.toggleItem} ${!isPublic ? styles.disabled : ''}`}>
-              <div className={styles.toggleInfo}>
-                <div className={styles.toggleIconBox}>
-                  <Dna size={18} />
-                </div>
-                <span className={styles.toggleLabel}>Genealogia</span>
-              </div>
-              <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={localSettings.showGenealogy}
-                  onChange={() => handleToggleSetting('showGenealogy')}
-                  disabled={!isPublic}
-                />
-                <span className={styles.slider}></span>
-              </label>
+          <div className={styles.settingRow}>
+            <div className={styles.settingInfo}>
+              <Dna size={20} className={styles.settingIcon} />
+              <span>Genealogia</span>
             </div>
-
-            <div className={`${styles.toggleItem} ${!isPublic ? styles.disabled : ''}`}>
-              <div className={styles.toggleInfo}>
-                <div className={styles.toggleIconBox}>
-                  <Trophy size={18} />
-                </div>
-                <span className={styles.toggleLabel}>Competições</span>
-              </div>
-              <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={localSettings.showCompetitions}
-                  onChange={() => handleToggleSetting('showCompetitions')}
-                  disabled={!isPublic}
-                />
-                <span className={styles.slider}></span>
-              </label>
-            </div>
-
-            <div className={`${styles.toggleItem} ${!isPublic ? styles.disabled : ''}`}>
-              <div className={styles.toggleInfo}>
-                <div className={styles.toggleIconBox}>
-                  <Activity size={18} />
-                </div>
-                <span className={styles.toggleLabel}>Histórico de Saúde</span>
-              </div>
-              <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={localSettings.showHealth}
-                  onChange={() => handleToggleSetting('showHealth')}
-                  disabled={!isPublic}
-                />
-                <span className={styles.slider}></span>
-              </label>
-            </div>
-
-            <div className={`${styles.toggleItem} ${!isPublic ? styles.disabled : ''}`}>
-              <div className={styles.toggleInfo}>
-                <div className={styles.toggleIconBox}>
-                  <Egg size={18} />
-                </div>
-                <span className={styles.toggleLabel}>Reprodução</span>
-              </div>
-              <label className={styles.switch}>
-                <input 
-                  type="checkbox" 
-                  checked={localSettings.showReproduction}
-                  onChange={() => handleToggleSetting('showReproduction')}
-                  disabled={!isPublic}
-                />
-                <span className={styles.slider}></span>
-              </label>
-            </div>
-
+            <label className={styles.checkbox}>
+              <input 
+                type="checkbox" 
+                checked={settings.showGenealogy}
+                onChange={() => handleToggleSetting('showGenealogy')}
+              />
+              <span className={styles.checkMark}></span>
+            </label>
           </div>
-        </div>
 
-        <button 
-          className={`${styles.mainAction} ${isPublic ? styles.btnPrivate : styles.btnPublic}`}
-          onClick={handleTogglePrivacy}
-          disabled={loading}
-        >
-          {loading ? 'Processando...' : (isPublic ? 'Desativar Link Público' : 'Gerar Link Público')}
-        </button>
+          <div className={styles.settingRow}>
+            <div className={styles.settingInfo}>
+              <Trophy size={20} className={styles.settingIcon} />
+              <span>Competições</span>
+            </div>
+            <label className={styles.checkbox}>
+              <input 
+                type="checkbox" 
+                checked={settings.showCompetitions}
+                onChange={() => handleToggleSetting('showCompetitions')}
+              />
+              <span className={styles.checkMark}></span>
+            </label>
+          </div>
+
+          <div className={styles.settingRow}>
+            <div className={styles.settingInfo}>
+              <ImageIcon size={20} className={styles.settingIcon} />
+              <span>Fotos</span>
+            </div>
+            <label className={styles.checkbox}>
+              <input 
+                type="checkbox" 
+                checked={settings.showPhotos !== false}
+                onChange={() => handleToggleSetting('showPhotos')}
+              />
+              <span className={styles.checkMark}></span>
+            </label>
+          </div>
+
+        </div>
 
       </div>
     </SheetModal>
