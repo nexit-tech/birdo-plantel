@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { mapBirdFromDB, mapLogFromDB, mapWeightFromDB } from '@/utils/mappers';
-import { Bird, BirdLog, BirdWeight, BirdStatus } from '@/types';
+import { Bird, BirdLog, BirdWeight, BirdStatus, ShareSettings } from '@/types';
 
 export function useBird(id: string) {
   const [bird, setBird] = useState<Bird | null>(null);
@@ -140,11 +140,9 @@ export function useBird(id: string) {
     setBird(prev => prev ? { ...prev, logs: prev.logs.filter(l => l.id !== logId) } : null);
   };
 
-  // Função auxiliar robusta para converter qualquer entrada em número
   const parseNumber = (value: string | number | undefined | null): number | null => {
     if (value === undefined || value === null || value === '') return null;
     if (typeof value === 'number') return value;
-    // Substitui vírgula por ponto e remove qualquer caractere não numérico exceto ponto e sinal
     const cleanValue = value.toString().replace(',', '.').replace(/[^0-9.-]/g, '');
     const parsed = parseFloat(cleanValue);
     return isNaN(parsed) ? null : parsed;
@@ -155,7 +153,6 @@ export function useBird(id: string) {
       const weightId = weightData.id;
       const isEdit = !!weightId;
       
-      // Tratamento de Peso e Altura
       const weightVal = parseNumber(weightData.weight);
       const heightVal = parseNumber(weightData.height);
 
@@ -163,7 +160,6 @@ export function useBird(id: string) {
         throw new Error("O valor do peso é obrigatório.");
       }
 
-      // Tratamento de Data seguro
       let dateVal = new Date().toISOString();
       if (weightData.date) {
         const d = new Date(weightData.date);
@@ -176,12 +172,9 @@ export function useBird(id: string) {
         weight: weightVal,
         height: heightVal,
         date: dateVal,
-        // Só adiciona bird_id se for inserção (nova pesagem)
         ...(isEdit ? {} : { bird_id: id })
       };
       
-      console.log("Enviando peso:", payload); // Log para debug
-
       const query = supabase.from('bird_weights');
 
       const { data, error } = await (isEdit 
@@ -190,7 +183,6 @@ export function useBird(id: string) {
       );
 
       if (error) {
-        console.error("Erro Supabase:", error);
         throw error;
       }
 
@@ -236,6 +228,39 @@ export function useBird(id: string) {
     } : null);
   };
 
+  const togglePrivacy = async (isPublic: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('birds')
+        .update({ is_public: isPublic })
+        .eq('id', id);
+
+      if (error) throw error;
+      setBird(prev => prev ? { ...prev, isPublic } : null);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const updateShareSettings = async (settings: ShareSettings) => {
+    try {
+      const { error } = await supabase
+        .from('birds')
+        .update({ share_settings: settings })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setBird(prev => prev ? { ...prev, shareSettings: settings } : null);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
   return {
     bird,
     loading,
@@ -248,6 +273,8 @@ export function useBird(id: string) {
     saveWeight,
     deleteWeight,
     updateParent,
+    togglePrivacy,
+    updateShareSettings,
     refetch: fetchBird
   };
 }

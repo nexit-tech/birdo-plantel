@@ -1,92 +1,208 @@
 .container {
+  padding: 24px 20px;
+  padding-bottom: 120px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding-bottom: 100px;
+  gap: 32px;
+  background-color: var(--background);
+  min-height: 100vh;
 }
 
-.grid {
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.welcomeText {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--foreground);
+  letter-spacing: -1px;
+  line-height: 1.1;
+}
+
+.statsGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
-  padding: 20px;
 }
 
 .statCard {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  height: 100%;
   justify-content: space-between;
+  padding: 20px;
+  border-radius: 20px;
+  border: none;
+  min-height: 140px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.2s ease;
 }
 
-.iconWrapper {
-  width: 44px;
-  height: 44px;
+.statCard:active {
+  transform: scale(0.96);
+}
+
+.cardBlue {
+  background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%);
+  color: white;
+}
+
+.cardPurple {
+  background: linear-gradient(135deg, #5856D6 0%, #3634A3 100%);
+  color: white;
+}
+
+.cardOrange {
+  background: linear-gradient(135deg, #FF9500 0%, #FFCC00 100%);
+  color: white;
+}
+
+.cardGreen {
+  background: linear-gradient(135deg, #34C759 0%, #248A3D 100%);
+  color: white;
+}
+
+.statIconWrapper {
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.statInfo {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 12px;
 }
 
 .statValue {
-  font-family: var(--font-heading);
   font-size: 32px;
-  font-weight: 700;
-  color: var(--foreground);
+  font-weight: 800;
   line-height: 1;
   margin-bottom: 4px;
 }
 
 .statLabel {
   font-size: 14px;
-  font-weight: 500;
-  color: #8E8E93;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+/* Decoração de fundo sutil */
+.cardDecoration {
+  position: absolute;
+  right: -20px;
+  bottom: -20px;
+  opacity: 0.15;
+  transform: rotate(-15deg);
 }
 
 .section {
-  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .sectionTitle {
   font-size: 20px;
   font-weight: 700;
-  margin-bottom: 16px;
   color: var(--foreground);
-  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .actionsGrid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-  overflow-x: auto;
-  padding: 4px;
-  margin: -4px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.actionsGrid::-webkit-scrollbar {
-  display: none;
 }
 
 .actionCard {
-  min-width: 140px;
-  height: 100px;
+  background-color: var(--surface);
+  padding: 20px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
-  padding: 16px;
-  font-family: var(--font-heading);
-  font-size: 16px;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.actionCard:active {
+  background-color: var(--surface-secondary);
+  transform: scale(0.98);
+}
+
+.actionIconBox {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.iconBoxBlue { background-color: var(--primary-light); color: var(--primary); }
+.iconBoxGreen { background-color: var(--success-bg); color: var(--success); }
+.iconBoxPurple { background-color: #F3F2FF; color: #5856D6; }
+.iconBoxGray { background-color: var(--surface-secondary); color: var(--foreground); }
+
+.actionTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
+  line-height: 1.2;
+}
+
+.competitionCard {
+  grid-column: span 2;
+  background: var(--foreground);
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 24px;
+  text-align: left;
+}
+
+.competitionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.competitionTitle {
+  color: var(--surface);
+  font-size: 18px;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--primary) 0%, #1550D6 100%);
-  color: white;
-  border: none;
-  box-shadow: 0 8px 16px rgba(37, 145, 255, 0.25);
+}
+
+.competitionDesc {
+  color: var(--text-tertiary);
+  font-size: 13px;
+}
+
+.competitionIcon {
+  color: var(--warning);
+  background: rgba(255, 255, 255, 0.1);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

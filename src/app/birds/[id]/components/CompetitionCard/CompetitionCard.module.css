@@ -1,0 +1,151 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.summaryCard {
+  flex: 1;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.summaryValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #000000;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8E8E93;
+  text-transform: uppercase;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ticket {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: transform 0.2s;
+  border: none;
+  position: relative;
+}
+
+.ticket:active {
+  transform: scale(0.98);
+}
+
+.placeSection {
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #F2F2F7;
+  border-right: none; 
+  position: relative;
+}
+
+.placeNumber {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.placeOrdinal {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: -2px;
+}
+
+.gold { background: linear-gradient(135deg, #FFD700 0%, #FFB300 100%); color: #8B5E00; }
+.silver { background: linear-gradient(135deg, #E0E0E0 0%, #BDBDBD 100%); color: #424242; }
+.bronze { background: linear-gradient(135deg, #FFAB76 0%, #E67E22 100%); color: #6D3B00; }
+.defaultPlace { background-color: #F2F2F7; color: #8E8E93; }
+
+/* Right side: Event Details */
+.infoSection {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+
+.tournament {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1C1C1E;
+  line-height: 1.2;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #8E8E93;
+  font-weight: 500;
+}
+
+.pointsBadge {
+  background-color: rgba(0, 122, 255, 0.1);
+  color: #007AFF;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #C7C7CC;
+  padding: 4px;
+  cursor: pointer;
+}
+
+.deleteBtn:hover {
+  color: #FF3B30;
+}
+
+.emptyState {
+  padding: 40px;
+  text-align: center;
+  color: #8E8E93;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  border: 1px dashed #C7C7CC;
+}

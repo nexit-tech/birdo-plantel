@@ -1,90 +1,175 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Bird as BirdIcon, Users, Egg, DollarSign } from 'lucide-react';
-import { Header } from '@/components/layout/Header/Header';
-import { Card } from '@/components/ui/Card/Card';
-import { PdfGeneratorModal } from '@/components/features/PdfGeneratorModal/PdfGeneratorModal';
-import { useDashboard } from '@/hooks';
+import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
+import { useDashboard } from '@/hooks/useDashboard';
+import { useFinance } from '@/hooks/useFinance';
+import { useProfile } from '@/hooks/useProfile';
+import { useRouter } from 'next/navigation';
+import { PdfGeneratorModal } from '@/components/features/PdfGeneratorModal/PdfGeneratorModal';
+import { 
+  Bird, 
+  Users, 
+  Egg, 
+  Wallet, 
+  Plus, 
+  TrendingUp, 
+  FileText,
+  Trophy,
+  ArrowRight
+} from 'lucide-react';
+import clsx from 'clsx';
 
-export default function Dashboard() {
+export default function HomePage() {
+  const { stats, isLoading: dashboardLoading } = useDashboard();
+  const { transactions, isLoading: financeLoading } = useFinance();
+  const { profile } = useProfile();
   const router = useRouter();
-  const { stats, isLoading } = useDashboard();
+  
+  const [greeting, setGreeting] = useState('');
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
-  const dashboardStats = [
-    { 
-      label: 'Total de Aves', 
-      value: isLoading ? '-' : stats.totalBirds, 
-      icon: BirdIcon,
-      color: '#2563eb' 
-    },
-    { 
-      label: 'Casais Formados', 
-      value: isLoading ? '-' : stats.totalPairs, 
-      icon: Users,
-      color: '#db2777' 
-    },
-    { 
-      label: 'Filhotes Ativos', 
-      value: isLoading ? '-' : stats.activeChicks, 
-      icon: Egg,
-      color: '#d97706' 
-    },
-    { 
-      label: 'Disponíveis', 
-      value: isLoading ? '-' : stats.availableForSale, 
-      icon: DollarSign,
-      color: '#16a34a' 
-    },
-  ];
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Bom dia');
+    else if (hour < 18) setGreeting('Boa tarde');
+    else setGreeting('Boa noite');
+  }, []);
+
+  const balance = transactions.reduce((acc, curr) => {
+    const type = curr.type?.toUpperCase();
+    if (type === 'ENTRADA' || type === 'INCOME' || type === 'VENDA') {
+      return acc + (Number(curr.amount) || 0);
+    }
+    return acc - (Number(curr.amount) || 0);
+  }, 0);
+
+  const isLoading = dashboardLoading || financeLoading;
 
   return (
     <div className={styles.container}>
-      <Header useLogo />
-      
-      <div className={styles.grid}>
-        {dashboardStats.map((stat) => (
-          <Card key={stat.label} className={styles.statCard}>
-            <div className={styles.iconWrapper} style={{ backgroundColor: `${stat.color}20` }}>
-              <stat.icon size={24} color={stat.color} />
+
+      <header className={styles.header}>
+        <span className={styles.welcomeText}>
+          {greeting}, {profile?.name?.split(' ')[0] || 'Criador'} 👋
+        </span>
+        <h1 className={styles.title}>Painel de Controle</h1>
+      </header>
+
+      <div className={styles.statsGrid}>
+        <button className={clsx(styles.statCard, styles.cardBlue)} onClick={() => router.push('/birds')}>
+          <div className={styles.statIconWrapper}>
+            <Bird size={20} color="white" />
+          </div>
+          <div>
+            <div className={styles.statValue}>
+              {isLoading ? '-' : stats?.totalBirds ?? 0}
             </div>
-            <div className={styles.statInfo}>
-              <span className={styles.statValue}>{stat.value}</span>
-              <span className={styles.statLabel}>{stat.label}</span>
+            <div className={styles.statLabel}>Aves no Plantel</div>
+          </div>
+          <Bird size={80} className={styles.cardDecoration} />
+        </button>
+
+        <button className={clsx(styles.statCard, styles.cardPurple)} onClick={() => router.push('/pairs')}>
+          <div className={styles.statIconWrapper}>
+            <Users size={20} color="white" />
+          </div>
+          <div>
+            <div className={styles.statValue}>
+              {isLoading ? '-' : stats?.totalPairs ?? 0}
             </div>
-          </Card>
-        ))}
+            <div className={styles.statLabel}>Casais Formados</div>
+          </div>
+          <Users size={80} className={styles.cardDecoration} />
+        </button>
+
+        <button className={clsx(styles.statCard, styles.cardOrange)}>
+          <div className={styles.statIconWrapper}>
+            <Egg size={20} color="white" />
+          </div>
+          <div>
+            <div className={styles.statValue}>
+              {isLoading ? '-' : stats?.activeChicks ?? 0}
+            </div>
+            <div className={styles.statLabel}>Filhotes Ativos</div>
+          </div>
+          <Egg size={80} className={styles.cardDecoration} />
+        </button>
+
+        <button className={clsx(styles.statCard, styles.cardGreen)} onClick={() => router.push('/finance')}>
+          <div className={styles.statIconWrapper}>
+            <Wallet size={20} color="white" />
+          </div>
+          <div>
+            <div className={styles.statValue} style={{ fontSize: '24px' }}>
+               <span style={{ fontSize: '14px', verticalAlign: 'middle', marginRight: '4px' }}>R$</span>
+               {isLoading ? '-' : balance.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </div>
+            <div className={styles.statLabel}>Saldo em Caixa</div>
+          </div>
+          <Wallet size={80} className={styles.cardDecoration} />
+        </button>
       </div>
 
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Ações Rápidas</h2>
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>O que você quer fazer?</h2>
+        
         <div className={styles.actionsGrid}>
-          <button className={styles.actionCard} onClick={() => router.push('/birds?action=new')}>
-            <span>Nova Ave</span>
-          </button>
-          
-          <button className={styles.actionCard} onClick={() => router.push('/pairs?action=new')}>
-            <span>Novo Casal</span>
-          </button>
-          <button className={styles.actionCard} onClick={() => router.push('/pairs')}>
-            <span>Registrar Postura</span>
-          </button>
-
-          <button className={styles.actionCard} onClick={() => router.push('/finance?action=new')}>
-            <span>Lançar Finança</span>
-          </button>
-          <button className={styles.actionCard} onClick={() => router.push('/finance')}>
-            <span>Ver Extrato</span>
+          <button 
+            className={styles.actionCard}
+            onClick={() => router.push('/birds?action=new')}
+          >
+            <div className={clsx(styles.actionIconBox, styles.iconBoxBlue)}>
+              <Plus size={24} />
+            </div>
+            <span className={styles.actionTitle}>Cadastrar<br/>Ave</span>
           </button>
 
-          <button className={styles.actionCard} onClick={() => setIsPdfModalOpen(true)}>
-            <span>Gerar Ficha</span>
+          {/* Nova Transação */}
+          <button 
+            className={styles.actionCard}
+            onClick={() => router.push('/finance?action=new')}
+          >
+            <div className={clsx(styles.actionIconBox, styles.iconBoxGreen)}>
+              <TrendingUp size={24} />
+            </div>
+            <span className={styles.actionTitle}>Lançar<br/>Finança</span>
+          </button>
+
+          <button 
+            className={styles.actionCard}
+            onClick={() => setIsPdfModalOpen(true)}
+          >
+            <div className={clsx(styles.actionIconBox, styles.iconBoxGray)}>
+              <FileText size={24} />
+            </div>
+            <span className={styles.actionTitle}>Fichas &<br/>Relatórios</span>
+          </button>
+
+           <button 
+            className={styles.actionCard}
+            onClick={() => router.push('/pairs?action=new')}
+          >
+             <div className={clsx(styles.actionIconBox, styles.iconBoxPurple)}>
+              <Users size={24} />
+            </div>
+            <span className={styles.actionTitle}>Novo<br/>Casal</span>
+          </button>
+
+          <button 
+            className={clsx(styles.actionCard, styles.competitionCard)}
+            onClick={() => router.push('/birds')}
+          >
+            <div className={styles.competitionContent}>
+              <span className={styles.competitionTitle}>Modo Competição</span>
+              <span className={styles.competitionDesc}>Ver fichas e pontuações</span>
+            </div>
+            <div className={styles.competitionIcon}>
+              <Trophy size={24} />
+            </div>
           </button>
         </div>
-      </div>
+      </section>
 
       <PdfGeneratorModal 
         isOpen={isPdfModalOpen}

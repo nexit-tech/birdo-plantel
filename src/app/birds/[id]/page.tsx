@@ -3,6 +3,8 @@
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useBird, useBirds } from '@/hooks';
+import { useCompetitionResults } from '@/hooks/useCompetitionResults';
+
 import { Header } from '@/components/layout/Header/Header';
 import { InfoRow } from './components/InfoRow/InfoRow';
 import { GenealogyCard } from './components/GenealogyCard/GenealogyCard';
@@ -11,9 +13,13 @@ import { BirdSelectorModal } from './components/BirdSelectorModal/BirdSelectorMo
 import { StatusModal } from './components/StatusModal/StatusModal';
 import { WeightModal } from './components/WeightModal/WeightModal';
 import { HistoryRow } from './components/HistoryRow/HistoryRow';
+import { CompetitionCard } from './components/CompetitionCard/CompetitionCard';
+import { AddCompetitionModal } from './components/AddCompetitionModal/AddCompetitionModal';
+import { ShareModal } from './components/ShareModal/ShareModal'; // Importado
+
 import { AddBirdModal } from '../components/AddBirdModal/AddBirdModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal/ConfirmModal';
-import { Edit2, Trash2, ChevronRight } from 'lucide-react';
+import { Edit2, Trash2, ChevronRight, Share2 } from 'lucide-react'; // Importado Share2
 import { BirdLog, LogType, BirdStatus, BirdWeight, Bird } from '@/types';
 import styles from './page.module.css';
 import clsx from 'clsx';
@@ -22,23 +28,23 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const { id } = use(params);
   const router = useRouter();
   
-  // Hook singular (manipula a ave atual)
   const { 
     bird, 
     loading, 
-    updateBird,     // Usaremos este para update
-    deleteBird,     // Usaremos este para delete (não pede ID)
+    updateBird,
+    deleteBird,
     updateStatus, 
     addLog, 
     updateLog, 
     deleteLog, 
     saveWeight, 
     deleteWeight,
-    updateParent 
+    updateParent,
+    togglePrivacy, // Importado
+    updateShareSettings // Importado
   } = useBird(id);
 
-  // Hook plural (apenas para buscar lista de parentes/outras aves)
-  // Removido updateBird e deleteBird daqui para evitar conflito de nomes
+  const competition = useCompetitionResults(id);
   const { birds: allBirds } = useBirds();
 
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -52,7 +58,11 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const [editingWeight, setEditingWeight] = useState<BirdWeight | null>(null);
 
+  const [isCompetitionModalOpen, setIsCompetitionModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false); // Estado do Modal Share
+  
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  
   const [confirmConfig, setConfirmConfig] = useState({
     isOpen: false,
     title: '',
@@ -70,49 +80,24 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
     });
   };
 
-  const handleEditBird = () => {
-    setIsEditModalOpen(true);
-  };
-
-  const handleSaveBird = async (updatedData: Bird) => {
-    // updateBird do useBird aceita Partial<Bird>, funciona corretamente
-    await updateBird(updatedData);
-    setIsEditModalOpen(false);
-  };
-
+  const handleEditBird = () => setIsEditModalOpen(true);
+  const handleSaveBird = async (updatedData: Bird) => { await updateBird(updatedData); setIsEditModalOpen(false); };
+  
   const handleDeleteBird = () => {
-    requestConfirm('Excluir Ave?', 'A ave e todo seu histórico serão removidos permanentemente.', async () => {
-      // deleteBird do useBird não recebe argumentos
+    requestConfirm('Excluir Ave?', 'A ave e todo seu histórico serão removidos.', async () => {
       await deleteBird();
       router.replace('/birds');
     });
   };
 
-  const handleStatusChange = async (newStatus: BirdStatus) => {
-    await updateStatus(newStatus);
-    setIsStatusModalOpen(false);
-  };
+  const handleStatusChange = async (newStatus: BirdStatus) => { await updateStatus(newStatus); setIsStatusModalOpen(false); };
 
-  const handleOpenAddLog = (type: LogType) => {
-    setActiveLogType(type);
-    setEditingLog(null);
-    setIsLogModalOpen(true);
-  };
-
-  const handleEditLog = (log: BirdLog) => {
-    setActiveLogType(log.type);
-    setEditingLog(log);
-    setIsLogModalOpen(true);
-  };
-
-  const handleDeleteLog = (logId: string) => {
-    requestConfirm('Excluir Registro?', 'Essa ação não poderá ser desfeita.', () => deleteLog(logId));
-  };
-
+  const handleOpenAddLog = (type: LogType) => { setActiveLogType(type); setEditingLog(null); setIsLogModalOpen(true); };
+  const handleEditLog = (log: BirdLog) => { setActiveLogType(log.type); setEditingLog(log); setIsLogModalOpen(true); };
+  const handleDeleteLog = (logId: string) => { requestConfirm('Excluir Registro?', 'Não poderá ser desfeito.', () => deleteLog(logId)); };
   const handleSaveLog = async (data: LogData) => {
     const logPayload = { type: activeLogType, title: data.title, date: data.date, notes: data.notes || undefined, icon: data.icon };
-    if (data.id) await updateLog({ ...logPayload, id: data.id });
-    else await addLog(logPayload);
+    if (data.id) await updateLog({ ...logPayload, id: data.id }); else await addLog(logPayload);
     setIsLogModalOpen(false);
   };
 
@@ -121,14 +106,16 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
   const handleSaveWeight = async (data: BirdWeight) => { await saveWeight(data); setIsWeightModalOpen(false); };
   const handleDeleteWeight = (id: string) => { requestConfirm('Excluir?', 'Remover peso?', () => deleteWeight(id)); };
 
+  const handleDeleteCompetition = (compId: string) => {
+    requestConfirm('Excluir Competição?', 'Este resultado será removido permanentemente.', () => competition.deleteResult(compId));
+  };
+
   const openParentSelector = (type: 'PAI' | 'MAE') => { setParentSelectorType(type); setIsParentSelectorOpen(true); };
   const handleSelectParent = async (sid: string) => { await updateParent(parentSelectorType, sid); setIsParentSelectorOpen(false); };
   const handleDeleteParent = (type: 'PAI' | 'MAE') => { requestConfirm('Remover?', 'Desvincular?', () => updateParent(type, undefined)); };
 
-  // Usar os IDs da ave atual para encontrar os objetos completos na lista geral
   const father = allBirds.find(b => b.id === bird.fatherId);
   const mother = allBirds.find(b => b.id === bird.motherId);
-  
   const getCandidates = () => {
     const genderNeeded = parentSelectorType === 'PAI' ? 'MACHO' : 'FEMEA';
     return allBirds.filter(b => b.id !== bird.id && b.gender === genderNeeded);
@@ -155,16 +142,19 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
         showBack 
         action={
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            {/* BOTÃO DE COMPARTILHAMENTO */}
             <button 
-              onClick={handleDeleteBird}
+              onClick={() => setIsShareModalOpen(true)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
             >
+              <Share2 size={22} color="#007AFF" />
+            </button>
+            {/* ------------------------ */}
+
+            <button onClick={handleDeleteBird} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
               <Trash2 size={22} color="#FF3B30" />
             </button>
-            <button 
-              onClick={handleEditBird}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
-            >
+            <button onClick={handleEditBird} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
               <Edit2 size={22} color="#007AFF" />
             </button>
           </div>
@@ -175,11 +165,7 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
         <div className={styles.hero}>
           <div className={styles.avatarLarge}>
             {bird.photoUrl ? (
-              <img 
-                src={bird.photoUrl} 
-                alt={bird.name} 
-                className={styles.avatarImage} 
-              />
+              <img src={bird.photoUrl} alt={bird.name} className={styles.avatarImage} />
             ) : (
               bird.gender === 'MACHO' ? '♂' : bird.gender === 'FEMEA' ? '♀' : '?'
             )}
@@ -204,6 +190,18 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
         <div className={styles.genealogyGrid}>
           <GenealogyCard role="PAI" bird={father} onAdd={() => openParentSelector('PAI')} onEdit={() => openParentSelector('PAI')} onDelete={() => handleDeleteParent('PAI')} />
           <GenealogyCard role="MAE" bird={mother} onAdd={() => openParentSelector('MAE')} onEdit={() => openParentSelector('MAE')} onDelete={() => handleDeleteParent('MAE')} />
+        </div>
+
+        <div className={styles.sectionHeader}>
+          <div className={styles.sectionTitle}>COMPETIÇÕES</div>
+          <button className={styles.addButton} onClick={() => setIsCompetitionModalOpen(true)}>+ Adicionar</button>
+        </div>
+        <div className={styles.group}>
+          <CompetitionCard 
+            results={competition.results} 
+            isLoading={competition.isLoading} 
+            onDelete={handleDeleteCompetition} 
+          />
         </div>
 
         <div className={styles.sectionHeader}>
@@ -245,8 +243,28 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
             <HistoryRow key={log.id} icon={log.icon} title={log.title} date={new Date(log.date).toLocaleDateString('pt-BR')} subtitle={log.notes} isLast={index === foodLogs.length - 1} onEdit={() => handleEditLog(log)} onDelete={() => handleDeleteLog(log.id)} />
           )) : <div className={styles.emptyState}>Nenhum registro de alimentação</div>}
         </div>
+
       </div>
 
+      {/* --- MODAL SHARE --- */}
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        isPublic={!!bird.isPublic}
+        shareSettings={bird.shareSettings}
+        onTogglePrivacy={togglePrivacy}
+        onUpdateSettings={updateShareSettings}
+        birdId={bird.id}
+      />
+      {/* ------------------- */}
+
+      <AddCompetitionModal 
+        isOpen={isCompetitionModalOpen} 
+        onClose={() => setIsCompetitionModalOpen(false)} 
+        birdId={bird.id} 
+        onSave={competition.addResult}
+      />
+      
       <AddLogModal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} type={activeLogType} initialData={editingLog ? { ...editingLog, notes: editingLog.notes || null } : null} onSave={handleSaveLog} />
       <BirdSelectorModal isOpen={isParentSelectorOpen} onClose={() => setIsParentSelectorOpen(false)} title={parentSelectorType === 'PAI' ? 'Selecionar Pai' : 'Selecionar Mãe'} candidates={getCandidates()} onSelect={handleSelectParent} />
       <StatusModal isOpen={isStatusModalOpen} onClose={() => setIsStatusModalOpen(false)} currentStatus={bird.status} onSelect={handleStatusChange} />
@@ -254,15 +272,7 @@ export default function BirdDetails({ params }: { params: Promise<{ id: string }
       
       <AddBirdModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleSaveBird} initialData={bird} />
 
-      <ConfirmModal 
-        isOpen={confirmConfig.isOpen} 
-        title={confirmConfig.title} 
-        message={confirmConfig.message} 
-        onConfirm={confirmConfig.onConfirm} 
-        onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))} 
-        confirmLabel="Confirmar" 
-        isDanger={true} 
-      />
+      <ConfirmModal isOpen={confirmConfig.isOpen} title={confirmConfig.title} message={confirmConfig.message} onConfirm={confirmConfig.onConfirm} onCancel={() => setConfirmConfig(prev => ({ ...prev, isOpen: false }))} confirmLabel="Confirmar" isDanger={true} />
     </div>
   );
 }

@@ -4,6 +4,14 @@ export type PairStatus = 'ATIVO' | 'INCUBACAO' | 'ALIMENTANDO' | 'DESCANSO';
 export type LogType = 'SAUDE' | 'REPRODUCAO' | 'ALIMENTACAO';
 export type TransactionType = 'RECEITA' | 'DESPESA';
 
+export interface ShareSettings {
+  showGenealogy: boolean;
+  showCompetitions: boolean;
+  showHealth: boolean;
+  showReproduction: boolean;
+  showPhotos: boolean;
+}
+
 export interface BirdLog {
   id: string;
   type: LogType;
@@ -18,6 +26,18 @@ export interface BirdWeight {
   date: string;
   weight: number;
   height?: number;
+}
+
+export interface CompetitionResult {
+  id: string;
+  bird_id: string;
+  tournament_name: string;
+  place: number;
+  event_date: string;
+  city?: string;
+  category?: string;
+  points?: number;
+  obs?: string;
 }
 
 export interface Bird {
@@ -36,6 +56,9 @@ export interface Bird {
   notes?: string;
   logs: BirdLog[];
   weights: BirdWeight[];
+  competitionResults?: CompetitionResult[];
+  isPublic?: boolean;
+  shareSettings?: ShareSettings;
 }
 
 export interface BreedingCycle {

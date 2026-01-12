@@ -81,7 +81,7 @@
   justify-content: space-between;
   padding: 0 20px;
   margin-bottom: 8px;
-  margin-top: 24px;
+  margin-top: 32px;
 }
 
 .sectionTitle {
@@ -92,6 +92,11 @@
   letter-spacing: 0.5px;
   margin-left: 20px;
   margin-bottom: 8px;
+  margin-top: 32px;
+}
+
+.hero + .sectionTitle {
+  margin-top: 0;
 }
 
 .sectionHeader .sectionTitle {
