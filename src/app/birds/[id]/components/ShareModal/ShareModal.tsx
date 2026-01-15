@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { SheetModal } from '@/components/ui/SheetModal/SheetModal';
-import { createClient } from '@/lib/supabase/client';
 import { Copy, Check, Share2, Trophy, Dna, Image as ImageIcon } from 'lucide-react';
 import styles from './ShareModal.module.css';
 import clsx from 'clsx';
@@ -12,29 +11,32 @@ interface ShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   birdId: string;
-  initialIsPublic?: boolean;
-  initialSettings?: ShareSettings;
-  birdName: string;
+  isPublic: boolean;
+  shareSettings?: ShareSettings;
+  onTogglePrivacy: (isPublic: boolean) => Promise<boolean>;
+  onUpdateSettings: (settings: ShareSettings) => Promise<boolean>;
 }
 
 export function ShareModal({ 
   isOpen, 
   onClose, 
   birdId, 
-  initialIsPublic = false,
-  initialSettings 
+  isPublic,
+  shareSettings,
+  onTogglePrivacy,
+  onUpdateSettings
 }: ShareModalProps) {
-  const supabase = createClient();
-  const [isPublic, setIsPublic] = useState(initialIsPublic);
-  const [settings, setSettings] = useState<ShareSettings>(initialSettings || {
+  const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+
+  // Valores padrão para evitar erros caso settings venha undefined
+  const settings = shareSettings || {
     showGenealogy: true,
     showCompetitions: true,
     showHealth: false,
     showReproduction: false,
     showPhotos: true
-  });
-  const [copied, setCopied] = useState(false);
-  const [shareUrl, setShareUrl] = useState('');
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -42,43 +44,13 @@ export function ShareModal({
     }
   }, [birdId]);
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchStatus();
-    }
-  }, [isOpen, birdId]);
-
-  const fetchStatus = async () => {
-    const { data, error } = await supabase
-      .from('birds')
-      .select('is_public, share_settings')
-      .eq('id', birdId)
-      .single();
-
-    if (data && !error) {
-      setIsPublic(data.is_public);
-      if (data.share_settings) {
-        setSettings(data.share_settings as ShareSettings);
-      }
-    }
-  };
-
   const handleTogglePublic = async (newValue: boolean) => {
-    setIsPublic(newValue);
-    await supabase
-      .from('birds')
-      .update({ is_public: newValue })
-      .eq('id', birdId);
+    await onTogglePrivacy(newValue);
   };
 
   const handleToggleSetting = async (key: keyof ShareSettings) => {
     const newSettings = { ...settings, [key]: !settings[key] };
-    setSettings(newSettings);
-    
-    await supabase
-      .from('birds')
-      .update({ share_settings: newSettings })
-      .eq('id', birdId);
+    await onUpdateSettings(newSettings);
   };
 
   const copyToClipboard = () => {
