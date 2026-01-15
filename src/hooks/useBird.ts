@@ -12,6 +12,13 @@ export function useBird(id: string) {
     if (!id) return;
     try {
       setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setBird(null);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('birds')
         .select(`
@@ -20,12 +27,14 @@ export function useBird(id: string) {
           weights:bird_weights(*)
         `)
         .eq('id', id)
+        .eq('user_id', user.id)
         .single();
 
       if (error) throw error;
       setBird(mapBirdFromDB(data));
     } catch (error) {
       console.error("Erro ao buscar ave:", error);
+      setBird(null);
     } finally {
       setLoading(false);
     }

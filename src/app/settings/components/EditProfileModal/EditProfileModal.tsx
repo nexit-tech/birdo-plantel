@@ -42,6 +42,9 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
     setFormData(prev => prev ? { ...prev, [field]: value } : null);
   };
 
+  // Garante que name seja uma string antes de acessar charAt
+  const displayName = formData.name || ''; 
+
   return (
     <SheetModal
       isOpen={isOpen}
@@ -54,7 +57,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
              {formData.photoUrl ? (
                <img src={formData.photoUrl} alt="Avatar" />
              ) : (
-               <span>{formData.name.charAt(0).toUpperCase()}</span>
+               <span>{displayName.charAt(0).toUpperCase()}</span>
              )}
           </div>
           <button className={styles.editPhotoBtn}>Alterar Foto</button>
@@ -67,7 +70,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
               <input
                 type="text"
                 className={styles.input}
-                value={formData.name}
+                value={formData.name || ''} 
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="Seu nome"
               />
@@ -78,7 +81,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
               <input
                 type="text"
                 className={styles.input}
-                value={formData.city}
+                value={formData.city || ''}
                 onChange={(e) => handleChange('city', e.target.value)}
                 placeholder="Sua cidade"
               />
@@ -91,7 +94,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
               <input
                 type="text"
                 className={styles.input}
-                value={formData.registryNumber}
+                value={formData.registryNumber || ''}
                 onChange={(e) => handleChange('registryNumber', e.target.value)}
                 placeholder="000000"
               />
@@ -102,7 +105,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
               <input
                 type="tel"
                 className={styles.input}
-                value={formData.phone}
+                value={formData.phone || ''}
                 onChange={(e) => handleChange('phone', e.target.value)}
                 placeholder="(00) 00000-0000"
               />
@@ -113,7 +116,7 @@ export function EditProfileModal({ isOpen, onClose, initialData, onSave }: EditP
               <input
                 type="email"
                 className={styles.input}
-                value={formData.email}
+                value={formData.email || ''}
                 onChange={(e) => handleChange('email', e.target.value)}
                 placeholder="seu@email.com"
                 readOnly 

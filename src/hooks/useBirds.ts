@@ -7,9 +7,13 @@ export function useBirds() {
   const supabase = createClient();
 
   const fetcher = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
     const { data, error } = await supabase
       .from('birds')
       .select('*, logs:bird_logs(*), weights:bird_weights(*)')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

@@ -20,10 +20,23 @@ export function useProfile() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setProfile(mapProfileFromDB(data));
+      
+      if (data) {
+        setProfile(mapProfileFromDB(data));
+      } else {
+        setProfile({
+          id: user.id,
+          name: '',
+          email: user.email || '',
+          registryNumber: '',
+          phone: '',
+          city: '',
+          photoUrl: ''
+        });
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -37,6 +50,7 @@ export function useProfile() {
       if (!user) throw new Error('Usuário não autenticado');
 
       const dbProfile = {
+        id: user.id,
         name: updatedData.name,
         email: updatedData.email,
         registry_number: updatedData.registryNumber,
@@ -47,8 +61,7 @@ export function useProfile() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .update(dbProfile)
-        .eq('id', user.id)
+        .upsert(dbProfile)
         .select()
         .single();
 

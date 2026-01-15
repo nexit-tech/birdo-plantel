@@ -17,6 +17,13 @@ export function usePairs() {
   const fetchPairs = useCallback(async () => {
     try {
       setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setPairs([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('pairs')
         .select(`
@@ -25,6 +32,7 @@ export function usePairs() {
           female:birds!female_id(name),
           cycles:breeding_cycles(*)
         `)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

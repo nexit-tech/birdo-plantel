@@ -19,9 +19,17 @@ export function useFinance() {
 
     try {
       setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setTransactions([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
+        .eq('user_id', user.id)
         .order('date', { ascending: false });
 
       if (error) throw error;
@@ -109,11 +117,7 @@ export function useFinance() {
   };
 
   useEffect(() => {
-    if (!cachedTransactions) {
-      fetchTransactions();
-    } else {
-      setIsLoading(false);
-    }
+    fetchTransactions();
   }, [fetchTransactions]);
 
   return {

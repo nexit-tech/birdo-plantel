@@ -30,25 +30,36 @@ export function useDashboard() {
 
     try {
       setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        setStats({ totalBirds: 0, totalPairs: 0, activeChicks: 0, availableForSale: 0 });
+        return;
+      }
 
       const { count: birdsCount } = await supabase
         .from('birds')
         .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
         .neq('status', 'VENDIDO')
         .neq('status', 'OBITO');
 
       const { count: pairsCount } = await supabase
         .from('pairs')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
 
       const { count: availableCount } = await supabase
         .from('birds')
         .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
         .eq('status', 'DISPONIVEL');
 
+      // Busca ciclos ativos filtrando pelos casais do usuário via join
       const { data: cycles } = await supabase
         .from('breeding_cycles')
-        .select('hatched_count')
+        .select('hatched_count, pairs!inner(user_id)')
+        .eq('pairs.user_id', user.id)
         .eq('status', 'EM_ANDAMENTO');
 
       const chicksCount = cycles?.reduce((acc, curr) => acc + (curr.hatched_count || 0), 0) || 0;
@@ -71,11 +82,7 @@ export function useDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!cachedData) {
-      fetchStats();
-    } else {
-      setIsLoading(false);
-    }
+    fetchStats();
   }, [fetchStats]);
 
   return { stats, isLoading, refetch: () => fetchStats(true) };

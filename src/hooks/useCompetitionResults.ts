@@ -12,14 +12,28 @@ export function useCompetitionResults(birdId?: string) {
     
     try {
       setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setResults([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('competition_results')
-        .select('*')
+        .select('*, birds!inner(user_id)')
         .eq('bird_id', birdId)
+        .eq('birds.user_id', user.id)
         .order('event_date', { ascending: false });
 
       if (error) throw error;
-      setResults(data || []);
+      
+      const cleanData = (data || []).map((item: any) => {
+        const { birds, ...rest } = item;
+        return rest as CompetitionResult;
+      });
+
+      setResults(cleanData);
     } catch (error) {
       console.error('Erro ao buscar resultados:', error);
     } finally {
